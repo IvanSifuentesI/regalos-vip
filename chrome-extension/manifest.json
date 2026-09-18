@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "Bóveda Lead Magnet & WhatsApp Sync",
+  "version": "1.0.0",
+  "description": "Extensión para capturar contactos de WhatsApp Web y guardarlos automáticamente en Supabase.",
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://web.whatsapp.com/*",
+    "http://localhost:3000/*",
+    "https://*.supabase.co/*",
+    "https://*.vercel.app/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Bóveda Leads & Supabase"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://web.whatsapp.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}
