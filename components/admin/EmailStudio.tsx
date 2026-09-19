@@ -14,7 +14,9 @@ import {
   Settings, 
   HelpCircle,
   Clock,
-  UserCheck
+  UserCheck,
+  Copy,
+  Cloud
 } from 'lucide-react';
 import { ClassroomConfig, Lead } from '@/lib/types';
 
@@ -44,6 +46,7 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
   const [apiKey, setApiKey] = useState(config.brevo_api_key || '');
   const [senderEmail, setSenderEmail] = useState(config.email_remitente || '');
   const [senderName, setSenderName] = useState(config.nombre_classroom || 'REGALOS EXCLUSIVOS');
+  const [copiedVar, setCopiedVar] = useState<string | null>(null);
   
   // Diagnosis state
   const [isDiagnosing, setIsDiagnosing] = useState(false);
@@ -78,6 +81,12 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
     if (cachedSender && !senderEmail) setSenderEmail(cachedSender);
   }, []);
 
+  const copyToClipboard = (text: string, id: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedVar(id);
+    setTimeout(() => setCopiedVar(null), 2500);
+  };
+
   // Sync to parent & local storage
   const handleSaveCredentials = () => {
     localStorage.setItem('brevo_api_key', apiKey.trim());
@@ -89,10 +98,13 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
     alert('Credenciales de Brevo guardadas correctamente en tu navegador.');
   };
 
+  // Check if API key is available either from state or Vercel
+  const isKeyAvailable = Boolean(apiKey.trim() || config.has_vercel_brevo_key || config.brevo_api_key);
+
   // Run live Brevo diagnosis
   const handleRunDiagnosis = async () => {
-    if (!apiKey.trim()) {
-      alert('Por favor introduce tu API Key de Brevo primero.');
+    if (!isKeyAvailable) {
+      alert('Por favor introduce tu API Key de Brevo o configúrala en Vercel.');
       return;
     }
 
@@ -105,8 +117,8 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'diagnose_brevo',
-          brevo_api_key: apiKey.trim(),
-          email_remitente: senderEmail.trim(),
+          brevo_api_key: apiKey.trim() || undefined,
+          email_remitente: senderEmail.trim() || undefined,
         }),
       });
       const data = await res.json();
@@ -134,8 +146,8 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
       alert('Introduce un correo para recibir la prueba.');
       return;
     }
-    if (!apiKey.trim()) {
-      alert('Configura primero tu API Key de Brevo.');
+    if (!isKeyAvailable) {
+      alert('Configura primero tu API Key de Brevo en Vercel o en el panel.');
       return;
     }
 
@@ -149,15 +161,20 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
         body: JSON.stringify({
           action: 'test_send',
           to: testEmailTo.trim(),
-          brevo_api_key: apiKey.trim(),
-          email_remitente: senderEmail.trim(),
+          customSubject: emailSubject,
+          bodyContent: emailBody,
+          ctaText: ctaButtonText,
+          ctaUrl: ctaButtonUrl,
+          bannerUrl: config.banner_url,
+          brevo_api_key: apiKey.trim() || undefined,
+          email_remitente: senderEmail.trim() || undefined,
         }),
       });
       const data = await res.json();
       if (data.success && data.mode !== 'brevo_error') {
         setTestResult({
           success: true,
-          message: `✅ ¡Correo enviado exitosamente a ${testEmailTo}! Revisa tu bandeja de entrada o carpeta de spam (ID: ${data.id || 'ok'}).`,
+          message: `✅ ¡Correo profesional con banner enviado exitosamente a ${testEmailTo}! Revisa tu bandeja de entrada o spam (ID: ${data.id || 'ok'}).`,
         });
       } else {
         setTestResult({
@@ -181,43 +198,18 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
       alert('Aún no tienes prospectos capturados en la base de datos.');
       return;
     }
-    if (!apiKey.trim()) {
+    if (!isKeyAvailable) {
       alert('Configura y verifica tu API Key de Brevo antes de enviar.');
       return;
     }
 
-    if (!confirm(`¿Confirmas enviar esta campaña a los ${leads.length} prospectos registrados?`)) {
+    if (!confirm(`¿Confirmas enviar este correo profesional con banner a los ${leads.length} prospectos registrados?`)) {
       return;
     }
 
     setIsBroadcasting(true);
     setBroadcastProgress({ current: 0, total: leads.length, logs: [] });
     setBroadcastResult(null);
-
-    // Format custom HTML with responsive container
-    const formattedHtml = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e5e7eb; border-radius: 16px; background-color: #ffffff; color: #111827;">
-        <div style="background-color: #FDE047; padding: 10px 16px; border-radius: 10px; font-weight: bold; font-size: 13px; text-transform: uppercase; text-align: center; color: #000000; margin-bottom: 20px;">
-          ${senderName}
-        </div>
-        
-        <div style="font-size: 15px; line-height: 1.7; color: #374151; white-space: pre-line;">
-          ${emailBody}
-        </div>
-
-        ${ctaButtonUrl ? `
-          <div style="margin-top: 30px; text-align: center;">
-            <a href="${ctaButtonUrl}" style="display: inline-block; background-color: #FACC15; color: #000000; padding: 14px 28px; border-radius: 12px; font-weight: 800; font-size: 15px; text-decoration: none; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
-              ${ctaButtonText}
-            </a>
-          </div>
-        ` : ''}
-
-        <div style="margin-top: 35px; padding-top: 20px; border-top: 1px solid #f3f4f6; font-size: 12px; color: #9ca3af; text-align: center;">
-          Recibiste este mensaje porque solicitaste acceso a los recursos gratuitos de ${senderName}.
-        </div>
-      </div>
-    `;
 
     try {
       const res = await fetch('/api/email', {
@@ -226,9 +218,12 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
         body: JSON.stringify({
           action: 'broadcast_custom',
           customSubject: emailSubject,
-          customHtml: formattedHtml,
-          brevo_api_key: apiKey.trim(),
-          email_remitente: senderEmail.trim(),
+          bodyContent: emailBody,
+          ctaText: ctaButtonText,
+          ctaUrl: ctaButtonUrl,
+          bannerUrl: config.banner_url,
+          brevo_api_key: apiKey.trim() || undefined,
+          email_remitente: senderEmail.trim() || undefined,
         }),
       });
       const data = await res.json();
@@ -290,14 +285,19 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
               <h2 className="text-base sm:text-lg font-black text-gray-900">
                 Email Studio & Integrador Brevo
               </h2>
-              {diagnosis?.connected ? (
+              {config.has_vercel_brevo_key ? (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-black bg-emerald-100 text-emerald-800">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  Vercel Cloud Activo
+                </span>
+              ) : diagnosis?.connected ? (
                 <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-black bg-emerald-100 text-emerald-800">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                   Conectado (300/día)
                 </span>
               ) : apiKey ? (
                 <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800">
-                  Clave guardada
+                  Clave local
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-gray-100 text-gray-600">
@@ -331,7 +331,7 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
                 : 'text-gray-500 hover:text-gray-800'
             }`}
           >
-            ⚡ Configuración Brevo & Test
+            ⚡ Configuración Vercel / Brevo
           </button>
         </div>
       </div>
@@ -494,40 +494,69 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
               </span>
             </div>
 
-            {/* Email Mockup Container */}
-            <div className="bg-gray-100 p-4 sm:p-5 rounded-2xl border border-gray-200">
-              <div className="bg-white rounded-xl shadow-xs border border-gray-200 p-5 space-y-4">
+            {/* Email Mockup Container with Hero Banner Image */}
+            <div className="bg-gray-100 p-3 sm:p-4 rounded-2xl border border-gray-200">
+              <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
                 
-                {/* Header Badge */}
-                <div className="bg-[#FDE047] text-black font-extrabold text-xs tracking-wider uppercase py-1.5 px-3 rounded-lg text-center">
-                  {senderName}
-                </div>
-
-                {/* Subject Preview */}
-                <div className="pb-3 border-b border-gray-100">
-                  <span className="text-[10px] text-gray-400 font-bold block uppercase">Asunto</span>
-                  <h4 className="text-sm font-bold text-gray-900 mt-0.5">
-                    {emailSubject.replace(/\{\{nombre\}\}/gi, leads[0]?.nombre || 'Ivan')}
-                  </h4>
-                </div>
-
-                {/* Body Preview */}
-                <div className="text-xs sm:text-[13px] text-gray-700 leading-relaxed whitespace-pre-line">
-                  {emailBody.replace(/\{\{nombre\}\}/gi, leads[0]?.nombre || 'Ivan')}
-                </div>
-
-                {/* CTA Button Preview */}
-                {ctaButtonUrl && (
-                  <div className="pt-2 text-center">
-                    <div className="inline-block bg-[#FACC15] text-black font-black text-xs px-5 py-2.5 rounded-xl shadow-xs">
-                      {ctaButtonText}
-                    </div>
+                {/* Hero Banner Image */}
+                <div className="relative w-full h-36 sm:h-40 bg-slate-900 overflow-hidden border-b-2 border-yellow-400">
+                  <img 
+                    src={config.banner_url || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80"}
+                    alt="Banner Bóveda VIP"
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-3">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-yellow-400 bg-black/70 px-2 py-0.5 rounded">
+                      {senderName}
+                    </span>
                   </div>
-                )}
+                </div>
 
-                {/* Footer Preview */}
-                <div className="pt-4 border-t border-gray-100 text-center text-[10px] text-gray-400">
-                  Recibiste este mensaje porque te registraste en {senderName}. Cero spam.
+                <div className="p-5 space-y-4">
+                  {/* Top VIP Badge */}
+                  <div>
+                    <span className="inline-block bg-[#FDE047] text-black font-black text-[10px] tracking-wider uppercase py-1 px-3 rounded-full">
+                      BÓVEDA VIP · RECORDATORIO OFICIAL
+                    </span>
+                  </div>
+
+                  {/* Subject Preview */}
+                  <div className="pb-3 border-b border-gray-100">
+                    <span className="text-[10px] text-gray-400 font-bold block uppercase">Asunto</span>
+                    <h4 className="text-sm font-bold text-gray-900 mt-0.5">
+                      {emailSubject.replace(/\{\{nombre\}\}/gi, leads[0]?.nombre || 'Iván')}
+                    </h4>
+                  </div>
+
+                  {/* Body Preview */}
+                  <div className="text-xs sm:text-[13px] text-gray-700 leading-relaxed whitespace-pre-line">
+                    {emailBody.replace(/\{\{nombre\}\}/gi, leads[0]?.nombre || 'Iván')}
+                  </div>
+
+                  {/* CTA Button Preview */}
+                  {ctaButtonUrl && (
+                    <div className="pt-2 text-center">
+                      <div className="inline-block bg-[#FACC15] text-black font-black text-xs px-6 py-2.5 rounded-xl shadow-md uppercase tracking-wide">
+                        {ctaButtonText}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Community WhatsApp Callout Box */}
+                  <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center">
+                    <p className="text-[11px] font-bold text-emerald-900 mb-0.5">
+                      ¿Aún no estás en nuestro Grupo Oficial de WhatsApp?
+                    </p>
+                    <span className="text-[11px] font-extrabold text-emerald-700 underline">
+                      👉 Haz clic aquí para unirte a la Comunidad (+2,400 miembros)
+                    </span>
+                  </div>
+
+                  {/* Footer Anti-Spam Preview */}
+                  <div className="pt-3 border-t border-gray-100 text-center text-[10px] text-gray-400 leading-relaxed">
+                    <p className="font-bold text-gray-600 mb-0.5">{senderName}</p>
+                    <p>Recibiste este correo porque te registraste en nuestra web. Cero spam, solo herramientas de alto valor.</p>
+                  </div>
                 </div>
 
               </div>
@@ -578,11 +607,83 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
         <div className="max-w-3xl bg-white p-6 sm:p-8 rounded-2xl border border-gray-200 shadow-xs space-y-6">
           <div>
             <h3 className="text-base font-black text-gray-900">
-              ⚡ Asistente de Integración Brevo (Sendinblue)
+              ⚡ Asistente de Integración Brevo & Vercel
             </h3>
             <p className="text-xs text-gray-500 mt-1">
-              Brevo te ofrece <strong>300 correos al día gratis (9,000 correos al mes)</strong> sin pagar nada. Sigue estos 2 sencillos pasos para que funcione perfectamente.
+              Brevo te ofrece <strong>300 correos al día gratis (9,000 correos al mes)</strong> sin pagar nada. Guarda tu clave en Vercel para no tener que ingresarla manualmente a cada rato.
             </p>
+          </div>
+
+          {/* VERCEL CLOUD CARD */}
+          <div className="p-6 bg-gradient-to-br from-slate-900 via-slate-850 to-indigo-950 text-white rounded-2xl border border-slate-800 shadow-lg space-y-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center border border-white/10">
+                  <Cloud className="w-5 h-5 text-yellow-400" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-black tracking-wide text-white">
+                    Guardar Clave en Vercel (Recomendado)
+                  </h4>
+                  <p className="text-[11px] text-slate-300">
+                    Al poner tu clave en Vercel, queda guardada en la nube y tus correos se enviarán siempre sin pedirte nada más.
+                  </p>
+                </div>
+              </div>
+              {config.has_vercel_brevo_key && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 whitespace-nowrap">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                  Activo en Vercel
+                </span>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+              <div className="bg-white/5 border border-white/10 rounded-xl p-3 flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] font-mono uppercase text-slate-400 block">Variable 1: Clave API</span>
+                  <code className="text-xs font-mono font-bold text-yellow-300">BREVO_API_KEY</code>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => copyToClipboard('BREVO_API_KEY', 'var1')}
+                  className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-[11px] font-semibold text-white flex items-center gap-1 transition-colors cursor-pointer"
+                >
+                  <Copy className="w-3 h-3" />
+                  <span>{copiedVar === 'var1' ? '¡Copiado!' : 'Copiar'}</span>
+                </button>
+              </div>
+
+              <div className="bg-white/5 border border-white/10 rounded-xl p-3 flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] font-mono uppercase text-slate-400 block">Variable 2: Remitente</span>
+                  <code className="text-xs font-mono font-bold text-yellow-300">BREVO_SENDER_EMAIL</code>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => copyToClipboard('BREVO_SENDER_EMAIL', 'var2')}
+                  className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-[11px] font-semibold text-white flex items-center gap-1 transition-colors cursor-pointer"
+                >
+                  <Copy className="w-3 h-3" />
+                  <span>{copiedVar === 'var2' ? '¡Copiado!' : 'Copiar'}</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-1 text-xs text-slate-300 border-t border-white/10">
+              <p className="text-[11px] leading-relaxed">
+                Ve a tu proyecto en <strong className="text-white">Vercel &gt; Settings &gt; Environment Variables</strong>, pega estas dos variables y listo.
+              </p>
+              <a
+                href="https://vercel.com/dashboard"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-yellow-400 hover:bg-yellow-300 text-black font-black text-xs transition-all whitespace-nowrap shadow-sm cursor-pointer"
+              >
+                <span>Ir al Panel de Vercel</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
           </div>
 
           {/* Step 1: API Key */}
@@ -607,7 +708,7 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
                 type="password"
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
-                placeholder="xkeysib-..."
+                placeholder={config.has_vercel_brevo_key ? "(Configurado en Vercel - deja vacío o pon una nueva)" : "xkeysib-..."}
                 className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-blue-300 text-sm text-gray-900 font-mono outline-none focus:border-blue-500"
               />
               <p className="text-[11px] text-gray-600 leading-relaxed">

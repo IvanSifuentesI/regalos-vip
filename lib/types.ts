@@ -59,5 +59,7 @@ export interface ClassroomConfig {
   auto_email_bienvenida?: boolean;
   auto_email_actualizaciones?: boolean;
   whatsapp_webhook_url?: string;
+  has_vercel_brevo_key?: boolean;
+  has_vercel_sender_email?: boolean;
   updated_at?: string;
 }

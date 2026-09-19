@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getLeads, getConfig } from '@/lib/db';
-import { sendContentUpdateEmail, sendEmail, emailHistoryLogs, diagnoseBrevo } from '@/lib/email';
+import { sendContentUpdateEmail, sendEmail, emailHistoryLogs, diagnoseBrevo, buildBrandedEmailHtml } from '@/lib/email';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -15,14 +15,14 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { action, moduleTitle, moduleDesc, customSubject, customHtml } = body;
+    const { action, moduleTitle, moduleDesc, customSubject, customHtml, bodyContent, ctaText, ctaUrl, bannerUrl } = body;
     const config = await getConfig();
     const leads = await getLeads();
 
     // 1. Diagnóstico en tiempo real de Brevo
     if (action === 'diagnose_brevo') {
-      const apiKey = body.brevo_api_key || config.brevo_api_key;
-      const senderEmail = body.email_remitente || config.email_remitente;
+      const apiKey = body.brevo_api_key || config.brevo_api_key || process.env.BREVO_API_KEY;
+      const senderEmail = body.email_remitente || config.email_remitente || process.env.BREVO_SENDER_EMAIL;
       const diagnosis = await diagnoseBrevo(apiKey, senderEmail);
       return NextResponse.json({ success: true, diagnosis });
     }
@@ -36,34 +36,35 @@ export async function POST(req: Request) {
 
       const effectiveConfig = {
         ...config,
-        brevo_api_key: body.brevo_api_key || config.brevo_api_key,
-        email_remitente: body.email_remitente || config.email_remitente,
+        brevo_api_key: body.brevo_api_key || config.brevo_api_key || process.env.BREVO_API_KEY,
+        email_remitente: body.email_remitente || config.email_remitente || process.env.BREVO_SENDER_EMAIL,
       };
 
-      const testSubject = body.subject || `✅ Correo de prueba: Conexión con Brevo confirmada`;
-      const testHtml = body.html || `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 25px; border: 1px solid #e5e7eb; border-radius: 16px; background-color: #ffffff;">
-          <div style="background-color: #10b981; color: white; padding: 8px 16px; border-radius: 8px; font-weight: bold; font-size: 12px; display: inline-block; margin-bottom: 15px;">
-            BREVO EN VIVO · PRUEBA EXITOSA
-          </div>
-          <h2 style="color: #111827; margin: 0 0 10px 0;">¡Tu sistema de correo está funcionando! 🎉</h2>
-          <p style="color: #4b5563; font-size: 15px; line-height: 1.6;">
-            Este mensaje confirma que tu API Key de Brevo está correctamente integrada con tu plataforma y lista para enviar correos a tus prospectos.
-          </p>
-          <div style="background-color: #f9fafb; padding: 15px; border-radius: 10px; border: 1px solid #e5e7eb; margin: 20px 0; font-size: 13px; color: #374151;">
-            <strong>Destinatario:</strong> ${to}<br/>
-            <strong>Remitente utilizado:</strong> ${effectiveConfig.email_remitente || 'Auto-detectado de Brevo'}<br/>
-            <strong>Capacidad:</strong> 300 emails por día gratis (9,000 al mes)
-          </div>
-          <p style="color: #10b981; font-weight: bold; font-size: 14px;">
-            Ya puedes enviar tus recordatorios masivos con total seguridad.
-          </p>
-        </div>
-      `;
+      const testSubject = customSubject || body.subject || `✅ Acceso VIP Confirmado: Conexión con Brevo Verificada`;
+      const banner = bannerUrl || effectiveConfig.banner_url || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80';
+      const ctaBtnText = ctaText || '🚀 Ver Bóveda de Recursos';
+      const ctaBtnUrl = ctaUrl || effectiveConfig.whatsapp_comunidad_url || 'https://chat.whatsapp.com/LpfNzr7ZWh8KXyWvlBklQl';
+      const classroomTitle = effectiveConfig.nombre_classroom || 'REGALOS EXCLUSIVOS';
+
+      const content = bodyContent || `¡Hola {{nombre}}! 🎉\n\nEste es un correo de prueba en vivo que confirma que tu API Key de Brevo está 100% activa y conectada a tu servidor en Vercel.\n\nA partir de este momento, todos tus mensajes, avisos de nuevas lecciones y recordatorios masivos se entregarán con este formato gráfico profesional, banner en alta resolución y botones dorados de alta conversión.\n\nTodo listo para maximizar tus resultados sin caer en la carpeta de spam.`;
+
+      const testHtml = buildBrandedEmailHtml({
+        badge: 'SISTEMA OFICIAL · PRUEBA EXITOSA',
+        badgeColor: '#10B981',
+        badgeTextColor: '#FFFFFF',
+        title: '¡Tu integración de Brevo funciona al 100%! 🎉',
+        name: body.nombre || 'Iván',
+        bodyContent: content,
+        ctaText: ctaBtnText,
+        ctaUrl: ctaBtnUrl,
+        communityUrl: effectiveConfig.whatsapp_comunidad_url,
+        brandName: classroomTitle,
+        bannerUrl: banner,
+      });
 
       const result = await sendEmail({
         to,
-        subject: testSubject,
+        subject: testSubject.replace(/\{\{nombre\}\}/gi, body.nombre || 'Iván'),
         html: testHtml,
         type: 'calentamiento',
         config: effectiveConfig,
@@ -80,15 +81,20 @@ export async function POST(req: Request) {
 
     // 3. Envío masivo de recordatorio / campaña personalizada
     if (action === 'broadcast_custom') {
-      if (!customSubject || !customHtml) {
+      if (!customSubject || (!customHtml && !bodyContent)) {
         return NextResponse.json({ success: false, error: 'Asunto y contenido requeridos' }, { status: 400 });
       }
 
       const effectiveConfig = {
         ...config,
-        brevo_api_key: body.brevo_api_key || config.brevo_api_key,
-        email_remitente: body.email_remitente || config.email_remitente,
+        brevo_api_key: body.brevo_api_key || config.brevo_api_key || process.env.BREVO_API_KEY,
+        email_remitente: body.email_remitente || config.email_remitente || process.env.BREVO_SENDER_EMAIL,
       };
+
+      const banner = bannerUrl || effectiveConfig.banner_url || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80';
+      const ctaBtnText = ctaText || '🚀 Acceder a las Herramientas';
+      const ctaBtnUrl = ctaUrl || effectiveConfig.whatsapp_comunidad_url || 'https://chat.whatsapp.com/LpfNzr7ZWh8KXyWvlBklQl';
+      const classroomTitle = effectiveConfig.nombre_classroom || 'REGALOS EXCLUSIVOS';
 
       const results: Array<{ email: string; nombre: string; success: boolean; error?: string; mode?: string }> = [];
       let sentCount = 0;
@@ -96,8 +102,22 @@ export async function POST(req: Request) {
 
       for (const lead of leads) {
         try {
-          const personalizedHtml = customHtml.replace(/\{\{nombre\}\}/gi, lead.nombre || 'Amigo');
-          const personalizedSubject = customSubject.replace(/\{\{nombre\}\}/gi, lead.nombre || 'Amigo');
+          const recipientName = lead.nombre || 'Amigo';
+          const personalizedSubject = customSubject.replace(/\{\{nombre\}\}/gi, recipientName);
+
+          const personalizedHtml = bodyContent
+            ? buildBrandedEmailHtml({
+                badge: body.badge || 'BÓVEDA VIP · RECORDATORIO OFICIAL',
+                title: personalizedSubject,
+                name: recipientName,
+                bodyContent: bodyContent,
+                ctaText: ctaBtnText,
+                ctaUrl: ctaBtnUrl,
+                communityUrl: effectiveConfig.whatsapp_comunidad_url,
+                brandName: classroomTitle,
+                bannerUrl: banner,
+              })
+            : (customHtml || '').replace(/\{\{nombre\}\}/gi, recipientName);
 
           const res = await sendEmail({
             to: lead.email,

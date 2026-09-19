@@ -275,6 +275,129 @@ export async function sendEmail({
 }
 
 /**
+ * Generador maestro de plantilla de email ultra-profesional (Anti-Spam, responsive con imagen banner)
+ */
+export function buildBrandedEmailHtml({
+  badge = 'BÓVEDA VIP · ACCESO EXCLUSIVO',
+  badgeColor = '#FDE047',
+  badgeTextColor = '#000000',
+  title,
+  name,
+  bodyContent,
+  ctaText,
+  ctaUrl,
+  communityUrl = 'https://chat.whatsapp.com/LpfNzr7ZWh8KXyWvlBklQl',
+  brandName = 'REGALOS EXCLUSIVOS',
+  bannerUrl = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80',
+}: {
+  badge?: string;
+  badgeColor?: string;
+  badgeTextColor?: string;
+  title: string;
+  name: string;
+  bodyContent: string;
+  ctaText?: string;
+  ctaUrl?: string;
+  communityUrl?: string;
+  brandName?: string;
+  bannerUrl?: string;
+}): string {
+  const formattedBody = bodyContent
+    .replace(/\{\{nombre\}\}/gi, name)
+    .split('\n\n')
+    .map(p => `<p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.7; color: #374151;">${p.replace(/\n/g, '<br/>')}</p>`)
+    .join('');
+
+  return `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${title}</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f4f5f7; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
+  <div style="background-color: #f4f5f7; padding: 25px 10px;">
+    <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 18px; overflow: hidden; border: 1px solid #e5e7eb; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);">
+      
+      <!-- HERO BANNER IMAGE -->
+      <tr>
+        <td style="padding: 0; background-color: #0f172a; text-align: center;">
+          <img 
+            src="${bannerUrl}" 
+            alt="${brandName}" 
+            width="600" 
+            style="width: 100%; max-height: 220px; object-fit: cover; display: block; border-bottom: 3px solid #FACC15;" 
+          />
+        </td>
+      </tr>
+
+      <!-- TOP BADGE BAR -->
+      <tr>
+        <td style="padding: 18px 26px 0 26px;">
+          <div style="display: inline-block; background-color: ${badgeColor}; color: ${badgeTextColor}; font-size: 11px; font-weight: 900; letter-spacing: 0.8px; text-transform: uppercase; padding: 6px 14px; border-radius: 20px;">
+            ${badge}
+          </div>
+        </td>
+      </tr>
+
+      <!-- CONTENT BODY -->
+      <tr>
+        <td style="padding: 16px 28px 28px 28px;">
+          <h1 style="margin: 0 0 16px 0; font-size: 23px; font-weight: 900; color: #111827; letter-spacing: -0.5px; line-height: 1.3;">
+            ${title}
+          </h1>
+
+          <div style="font-size: 15px; color: #374151; line-height: 1.7;">
+            ${formattedBody}
+          </div>
+
+          <!-- PRIMARY CTA BUTTON -->
+          ${ctaUrl && ctaText ? `
+            <div style="text-align: center; margin: 32px 0 22px 0;">
+              <a href="${ctaUrl}" target="_blank" style="display: inline-block; background-color: #FACC15; color: #000000; font-size: 15px; font-weight: 900; text-decoration: none; padding: 15px 36px; border-radius: 14px; box-shadow: 0 4px 14px rgba(250, 204, 21, 0.4); text-transform: uppercase; letter-spacing: 0.5px;">
+                ${ctaText}
+              </a>
+            </div>
+          ` : ''}
+
+          <!-- COMMUNITY WHATSAPP CALLOUT -->
+          ${communityUrl ? `
+            <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 12px; padding: 14px 18px; margin-top: 24px; text-align: center;">
+              <p style="margin: 0 0 4px 0; font-size: 13px; font-weight: 700; color: #065f46;">
+                ¿Aún no estás en nuestro Grupo Oficial de WhatsApp?
+              </p>
+              <a href="${communityUrl}" target="_blank" style="color: #059669; font-size: 13px; font-weight: 800; text-decoration: underline;">
+                👉 Haz clic aquí para unirte a la Comunidad (+2,400 miembros)
+              </a>
+            </div>
+          ` : ''}
+        </td>
+      </tr>
+
+      <!-- FOOTER ANTI-SPAM -->
+      <tr>
+        <td style="background-color: #f9fafb; padding: 22px; border-top: 1px solid #f3f4f6; text-align: center;">
+          <p style="margin: 0 0 4px 0; font-size: 13px; font-weight: 800; color: #1f2937;">
+            ${brandName}
+          </p>
+          <p style="margin: 0 0 8px 0; font-size: 12px; color: #6b7280; line-height: 1.5;">
+            Recursos prácticos, prompts avanzados y automatizaciones con Inteligencia Artificial.
+          </p>
+          <p style="margin: 0; font-size: 11px; color: #9ca3af; line-height: 1.4;">
+            Recibiste este correo porque te registraste en nuestra página oficial. Cero spam, solo herramientas de alto valor.
+          </p>
+        </td>
+      </tr>
+
+    </table>
+  </div>
+</body>
+</html>
+  `;
+}
+
+/**
  * 1. Email de Bienvenida Inmediato (apenas se inscribe el lead)
  */
 export async function sendWelcomeEmail(lead: Lead, config?: ClassroomConfig) {
@@ -282,39 +405,19 @@ export async function sendWelcomeEmail(lead: Lead, config?: ClassroomConfig) {
   const classroomTitle = config?.nombre_classroom || 'REGALOS EXCLUSIVOS';
 
   const subject = `🎁 ¡Bienvenido ${lead.nombre}! Tu acceso a la ${classroomTitle} está listo`;
-  const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #111827; background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 16px;">
-      <div style="background-color: #FDE047; padding: 12px 20px; border-radius: 12px; font-weight: bold; font-size: 14px; text-transform: uppercase; text-align: center; color: #000000; margin-bottom: 20px;">
-        ACCESO CONFIRMADO · ${classroomTitle}
-      </div>
+  const bodyContent = `¡Hola ${lead.nombre}! 🎉\n\nTe damos la bienvenida oficial a nuestra **Bóveda Exclusiva de Recursos**. Ya tienes desbloqueado el acceso completo a todas las plantillas, prompts de creación de imágenes IA y guiones prácticos.\n\nPuedes ingresar en cualquier momento para poner en práctica las herramientas gratuitas.\n\nPara aprovechar al máximo este material y resolver dudas en vivo, únete a nuestra comunidad oficial en el botón de abajo.`;
 
-      <h2 style="font-size: 22px; font-weight: 800; color: #111827; margin-bottom: 12px;">
-        ¡Hola ${lead.nombre}! 🎉
-      </h2>
-
-      <p style="font-size: 15px; line-height: 1.6; color: #4b5563;">
-        Te damos la bienvenida a nuestra <strong>Bóveda Exclusiva de Recursos</strong>. Ya tienes desbloqueado el acceso completo a todas las plantillas, guiones y lecciones prácticas.
-      </p>
-
-      <div style="background-color: #f9fafb; border-left: 4px solid #10b981; padding: 16px; margin: 24px 0; border-radius: 8px;">
-        <h3 style="margin: 0 0 8px 0; font-size: 16px; color: #065f46;">📌 Paso 1: Únete a la Comunidad Oficial de WhatsApp</h3>
-        <p style="margin: 0 0 12px 0; font-size: 13px; color: #374151;">
-          Ahí resolvemos dudas en vivo, compartimos nuevas plantillas y hacemos networking entre miembros.
-        </p>
-        <a href="${communityUrl}" style="display: inline-block; background-color: #10b981; color: #ffffff; text-decoration: none; padding: 10px 20px; font-weight: bold; font-size: 14px; border-radius: 10px;">
-          💬 Unirme al Grupo de WhatsApp
-        </a>
-      </div>
-
-      <p style="font-size: 14px; line-height: 1.6; color: #4b5563;">
-        Puedes ingresar a ver las lecciones y descargar los archivos en cualquier momento desde tu dispositivo.
-      </p>
-
-      <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #9ca3af; text-align: center;">
-        Recibiste este correo porque te registraste con tu número ${lead.telefono}. Cero spam, solo valor.
-      </div>
-    </div>
-  `;
+  const html = buildBrandedEmailHtml({
+    badge: 'ACCESO CONFIRMADO · BÓVEDA VIP',
+    title: `¡Bienvenido a ${classroomTitle}!`,
+    name: lead.nombre,
+    bodyContent,
+    ctaText: '🚀 Entrar a la Bóveda de Recursos',
+    ctaUrl: communityUrl,
+    communityUrl,
+    brandName: classroomTitle,
+    bannerUrl: config?.banner_url || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80',
+  });
 
   return sendEmail({ to: lead.email, subject, html, type: 'bienvenida', config });
 }
@@ -335,37 +438,19 @@ export async function sendContentUpdateEmail({
 }) {
   const classroomTitle = config?.nombre_classroom || 'Bóveda de Recursos';
   const subject = `🔥 Nuevo contenido agregado: "${moduleTitle}" en la ${classroomTitle}`;
+  const bodyContent = `¡Hola ${lead.nombre}! 🚀\n\nAcabamos de subir nuevo material exclusivo a tu Bóveda:\n\n**${moduleTitle}**\n${moduleDesc || 'Nuevas herramientas y guiones prácticos listos para implementar.'}\n\nIngresa ahora mismo a tu cuenta para ponerlo en práctica.`;
 
-  const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #111827; background-color: #ffffff; border: 1px solid #e5e7eb; border-radius: 16px;">
-      <div style="background-color: #10b981; padding: 10px 20px; border-radius: 12px; font-weight: bold; font-size: 13px; text-transform: uppercase; text-align: center; color: #ffffff; margin-bottom: 20px;">
-        ⚡ ACTUALIZACIÓN DE CONTENIDO
-      </div>
-
-      <h2 style="font-size: 20px; font-weight: 800; color: #111827; margin-bottom: 12px;">
-        ${lead.nombre}, acabamos de subir nuevo material 🚀
-      </h2>
-
-      <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; padding: 18px; border-radius: 12px; margin: 20px 0;">
-        <h3 style="margin: 0 0 8px 0; font-size: 17px; color: #111827; font-weight: bold;">
-          ${moduleTitle}
-        </h3>
-        <p style="margin: 0; font-size: 14px; color: #4b5563; line-height: 1.5;">
-          ${moduleDesc || 'Nuevas herramientas y guiones prácticos listos para implementar.'}
-        </p>
-      </div>
-
-      <p style="font-size: 14px; color: #4b5563; line-height: 1.6;">
-        Entra a tu cuenta para ver la lección y descargar los archivos adjuntos.
-      </p>
-
-      <div style="margin-top: 30px; text-align: center;">
-        <a href="${config?.whatsapp_comunidad_url || '#'}" style="display: inline-block; background-color: #FACC15; color: #000000; text-decoration: none; padding: 12px 24px; font-weight: 800; font-size: 14px; border-radius: 12px;">
-          👉 Ver Novedades en el Classroom
-        </a>
-      </div>
-    </div>
-  `;
+  const html = buildBrandedEmailHtml({
+    badge: '⚡ ACTUALIZACIÓN DE CONTENIDO',
+    title: `Nuevo Contenido: ${moduleTitle}`,
+    name: lead.nombre,
+    bodyContent,
+    ctaText: '👉 Ver Novedades en el Classroom',
+    ctaUrl: config?.whatsapp_comunidad_url || '#',
+    communityUrl: config?.whatsapp_comunidad_url,
+    brandName: classroomTitle,
+    bannerUrl: config?.banner_url || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80',
+  });
 
   return sendEmail({ to: lead.email, subject, html, type: 'actualizacion', config });
 }
