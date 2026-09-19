@@ -36,6 +36,7 @@ import {
 } from 'lucide-react';
 import { Modulo, Recurso, ClassroomConfig, Lead } from '@/lib/types';
 import { INITIAL_MODULOS, DEFAULT_CONFIG } from '@/lib/demoData';
+import { EmailStudio } from '@/components/admin/EmailStudio';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -560,48 +561,6 @@ export default function AdminDashboardPage() {
       }
     } catch (err) {
       alert('Error al guardar ajustes');
-    }
-  };
-
-  // --- BROADCAST EMAIL CAMPAIGN (WARMUP / REMINDERS) ---
-  const handleSendWarmupBroadcast = async () => {
-    if (leads.length === 0) {
-      alert('No tienes prospectos capturados todavía.');
-      return;
-    }
-    if (!confirm(`¿Enviar correo de calentamiento/recordatorio a los ${leads.length} prospectos?`)) return;
-
-    try {
-      const res = await fetch('/api/email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'broadcast_custom',
-          customSubject: `⚡ Recordatorio importante: Acceso a tus herramientas exclusivas`,
-          customHtml: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 16px;">
-              <h2 style="color: #111827;">¡Hola! 👋</h2>
-              <p style="color: #4b5563; font-size: 15px; line-height: 1.6;">
-                Te recordamos que tienes recursos y plantillas exclusivas disponibles en tu Bóveda.
-              </p>
-              <p style="color: #4b5563; font-size: 15px; line-height: 1.6;">
-                Si deseas que implementemos estas automatizaciones contigo paso a paso en una sesión privada 1 a 1, escríbenos directamente a nuestro WhatsApp oficial.
-              </p>
-              <div style="margin-top: 25px; text-align: center;">
-                <a href="${config.cta_oferta_url || config.whatsapp_comunidad_url}" style="display: inline-block; background-color: #FACC15; color: #000; padding: 12px 24px; border-radius: 12px; font-weight: bold; text-decoration: none;">
-                  ${config.cta_oferta_texto || '🔥 Hablar por WhatsApp'}
-                </a>
-              </div>
-            </div>
-          `,
-        }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        alert(data.message || 'Campaña enviada con éxito');
-      }
-    } catch (e) {
-      alert('Error al enviar la campaña');
     }
   };
 
@@ -1252,191 +1211,63 @@ export default function AdminDashboardPage() {
         {/* TAB 3: AUTOMATIZACIONES (EMAIL & WHATSAPP) */}
         {/* ========================================================================= */}
         {activeTab === 'automatizaciones' && (
-          <div className="space-y-6 max-w-3xl">
-            
-            {/* Overview Banner */}
-            <div className="bg-gradient-to-r from-amber-50 to-yellow-50/50 p-6 rounded-2xl border border-amber-200">
-              <div className="flex items-start space-x-3">
-                <div className="w-10 h-10 rounded-xl bg-amber-500 text-black flex items-center justify-center font-bold">
-                  <Zap className="w-5 h-5" />
+          <div className="space-y-8">
+            {/* Dynamic Email Studio & Brevo Live Integrator */}
+            <EmailStudio 
+              config={config} 
+              leads={leads} 
+              onUpdateConfig={(newConf) => {
+                const updated = { ...config, ...newConf };
+                setConfig(updated);
+                try {
+                  localStorage.setItem('boveda_config_cache', JSON.stringify(updated));
+                } catch (e) {}
+              }} 
+            />
+
+            {/* WhatsApp Integration Tools */}
+            <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4 max-w-4xl">
+              <h3 className="text-sm font-black text-gray-900 uppercase tracking-wider flex items-center gap-2">
+                <Phone className="w-4 h-4 text-emerald-600" />
+                <span>Herramientas Complementarias de WhatsApp</span>
+              </h3>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                <div className="p-4 bg-emerald-50/50 rounded-xl border border-emerald-200 flex flex-col justify-between">
+                  <div>
+                    <h4 className="text-xs font-black text-emerald-950">
+                      Copiar Lista para Extensiones
+                    </h4>
+                    <p className="text-xs text-gray-600 mt-1">
+                      Copia todos los nombres y teléfonos de tus {leads.length} prospectos en formato listo para pegarlos en extensiones como WA Web Plus o WASender.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleCopyWhatsAppList}
+                    className="mt-4 w-full py-2.5 px-3 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-xs cursor-pointer transition-colors"
+                  >
+                    Copiar {leads.length} Contactos
+                  </button>
                 </div>
-                <div>
-                  <h3 className="text-base font-black text-gray-900">
-                    Automatizaciones Gratuitas y en Tiempo Real
-                  </h3>
-                  <p className="text-xs sm:text-sm text-gray-600 mt-1 leading-relaxed">
-                    Envía correos automáticos de bienvenida al registrarse, notifica cambios a todos tus alumnos y dispara mensajes a WhatsApp mediante Webhooks o extensiones sin pagar herramientas caras.
+
+                <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 space-y-2">
+                  <h4 className="text-xs font-black text-gray-900">
+                    Webhook de WhatsApp en Tiempo Real (Opcional)
+                  </h4>
+                  <input
+                    type="text"
+                    value={config.whatsapp_webhook_url || ''}
+                    onChange={(e) => setConfig({ ...config, whatsapp_webhook_url: e.target.value })}
+                    placeholder="https://tu-n8n.com/webhook/..."
+                    className="w-full px-3 py-2 rounded-xl bg-white border border-gray-300 text-xs font-mono outline-none focus:border-emerald-500"
+                  />
+                  <p className="text-[11px] text-gray-500">
+                    Dispara un mensaje instantáneo en n8n / Make cada vez que un visitante deja sus datos en la página.
                   </p>
                 </div>
               </div>
             </div>
-
-            {/* Campaign Actions */}
-            <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-4">
-              <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">
-                Disparadores Inmediatos (1 Clic)
-              </h3>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 flex flex-col justify-between">
-                  <div>
-                    <h4 className="text-xs font-black text-gray-900 flex items-center gap-1.5">
-                      <Send className="w-4 h-4 text-amber-600" />
-                      <span>Campaña de Calentamiento</span>
-                    </h4>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Envía un recordatorio por correo a todos tus leads para que revisen los recursos y conozcan la Mentoría VIP.
-                    </p>
-                  </div>
-                  <button
-                    onClick={handleSendWarmupBroadcast}
-                    className="mt-4 w-full py-2 px-3 rounded-xl text-xs font-bold text-black bg-[#FACC15] hover:bg-[#EAB308] shadow-xs cursor-pointer transition-colors"
-                  >
-                    Enviar a {leads.length} Leads
-                  </button>
-                </div>
-
-                <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 flex flex-col justify-between">
-                  <div>
-                    <h4 className="text-xs font-black text-emerald-900 flex items-center gap-1.5">
-                      <Phone className="w-4 h-4 text-emerald-600" />
-                      <span>WhatsApp Masivo (Extensión)</span>
-                    </h4>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Copia la lista con nombres y teléfonos formateados para pegarla en extensiones como WA Web Plus o WASender.
-                    </p>
-                  </div>
-                  <button
-                    onClick={handleCopyWhatsAppList}
-                    className="mt-4 w-full py-2 px-3 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 shadow-xs cursor-pointer transition-colors"
-                  >
-                    Copiar Lista Formateada
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Service Configuration */}
-            <form onSubmit={handleSaveConfig} className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs space-y-5">
-              <div>
-                <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">
-                  Configuración de Email & WhatsApp Marketing
-                </h3>
-                <p className="text-xs text-gray-500 mt-0.5">
-                  El sistema detecta automáticamente qué proveedor tienes configurado en orden de prioridad.
-                </p>
-              </div>
-
-              {/* OPTION 1: n8n + GMAIL API (RECOMMENDED) */}
-              <div className="p-4 bg-amber-50/50 rounded-xl border border-amber-200 space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="block text-xs font-black text-amber-950 uppercase tracking-wider">
-                    ⚡ Opción 1 (Recomendada): Webhook de Email (n8n + Gmail API)
-                  </label>
-                  <span className="text-[10px] font-black bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
-                    500 a 2,000 emails/día GRATIS
-                  </span>
-                </div>
-                <input
-                  type="text"
-                  value={config.email_webhook_url || ''}
-                  onChange={(e) => setConfig({ ...config, email_webhook_url: e.target.value })}
-                  placeholder="https://tu-n8n.com/webhook/enviar-email-gmail..."
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-amber-300 text-sm text-gray-900 outline-none focus:border-amber-500 font-mono"
-                />
-                <p className="text-[11px] text-gray-600">
-                  Conecta tu webhook de n8n para enviar correos masivos directos a la bandeja de entrada usando tu cuenta de Google Cloud / Gmail API.
-                </p>
-              </div>
-
-              {/* OPTION 2: BREVO API */}
-              <div className="p-4 bg-blue-50/40 rounded-xl border border-blue-200 space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="block text-xs font-black text-blue-950 uppercase tracking-wider">
-                    Opción 2: API Key de Brevo / Sendinblue
-                  </label>
-                  <span className="text-[10px] font-black bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
-                    300 emails/día = 9,000/mes GRATIS
-                  </span>
-                </div>
-                <input
-                  type="password"
-                  value={config.brevo_api_key || ''}
-                  onChange={(e) => setConfig({ ...config, brevo_api_key: e.target.value })}
-                  placeholder="xkeysib-..."
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-blue-300 text-sm text-gray-900 outline-none focus:border-blue-500 font-mono"
-                />
-                <p className="text-[11px] text-gray-600">
-                  Crea tu cuenta gratuita en <a href="https://brevo.com" target="_blank" className="text-blue-700 font-bold underline">brevo.com</a> y obtén tu API Key para envíos directos sin n8n.
-                </p>
-              </div>
-
-              {/* OPTION 3: RESEND API */}
-              <div className="p-4 bg-gray-50 rounded-xl border border-gray-200 space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="block text-xs font-black text-gray-900 uppercase tracking-wider">
-                    Opción 3: API Key de Resend
-                  </label>
-                  <span className="text-[10px] font-bold bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full">
-                    100 emails/día = 3,000/mes GRATIS
-                  </span>
-                </div>
-                <input
-                  type="password"
-                  value={config.resend_api_key || ''}
-                  onChange={(e) => setConfig({ ...config, resend_api_key: e.target.value })}
-                  placeholder="re_123456789..."
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-gray-300 text-sm text-gray-900 outline-none focus:border-amber-500 font-mono"
-                />
-              </div>
-
-              {/* REMITENTE */}
-              <div>
-                <label className="block text-[11px] font-bold text-gray-600 uppercase tracking-wider mb-1">
-                  Correo Remitente (From)
-                </label>
-                <input
-                  type="text"
-                  value={config.email_remitente || ''}
-                  onChange={(e) => setConfig({ ...config, email_remitente: e.target.value })}
-                  placeholder="REGALOS EXCLUSIVOS <tu-correo@tudominio.com>"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-sm text-gray-900 outline-none focus:border-amber-500"
-                />
-              </div>
-
-              {/* WHATSAPP WEBHOOK */}
-              <div className="p-4 bg-emerald-50/40 rounded-xl border border-emerald-200 space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="block text-xs font-black text-emerald-950 uppercase tracking-wider">
-                    Webhook de WhatsApp Automático (n8n / Evolution API / Make)
-                  </label>
-                  <span className="text-[10px] font-black bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
-                    Tiempo Real
-                  </span>
-                </div>
-                <input
-                  type="text"
-                  value={config.whatsapp_webhook_url || ''}
-                  onChange={(e) => setConfig({ ...config, whatsapp_webhook_url: e.target.value })}
-                  placeholder="https://tu-n8n.com/webhook/whatsapp-lead-magnet..."
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-emerald-300 text-sm text-gray-900 outline-none focus:border-emerald-500 font-mono"
-                />
-                <p className="text-[11px] text-gray-600">
-                  Cada vez que un lead se registre, enviará de inmediato su nombre y WhatsApp para disparar un mensaje automático de bienvenida.
-                </p>
-              </div>
-
-              <div className="pt-2">
-                <button
-                  type="submit"
-                  className="inline-flex items-center space-x-2 px-6 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-black bg-[#FACC15] hover:bg-[#EAB308] shadow-xs cursor-pointer"
-                >
-                  <Save className="w-4 h-4" />
-                  <span>Guardar Ajustes de Automatización</span>
-                </button>
-              </div>
-            </form>
-
           </div>
         )}
 

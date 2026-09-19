@@ -12,8 +12,94 @@ export interface SentEmailLog {
 
 export const emailHistoryLogs: SentEmailLog[] = [];
 
+// Helper to extract clean email address from "Name <email@domain.com>" or "email@domain.com"
+export function extractCleanEmail(input?: string): string {
+  if (!input) return '';
+  const match = input.match(/<([^>]+)>/);
+  if (match && match[1]) return match[1].trim();
+  return input.trim();
+}
+
+// Helper to extract sender name
+export function extractSenderName(input?: string, fallback: string = 'REGALOS EXCLUSIVOS'): string {
+  if (!input) return fallback;
+  if (input.includes('<')) {
+    const name = input.split('<')[0].trim();
+    if (name) return name;
+  }
+  return fallback;
+}
+
+// Diagnose Brevo Account & Senders
+export async function diagnoseBrevo(apiKey?: string, testSenderEmail?: string) {
+  const key = apiKey || process.env.BREVO_API_KEY;
+  if (!key) {
+    return {
+      connected: false,
+      error: 'No se ha configurado ninguna API Key de Brevo.',
+      code: 'missing_key',
+    };
+  }
+
+  try {
+    const accountRes = await fetch('https://api.brevo.com/v3/account', {
+      headers: { 'api-key': key, 'Accept': 'application/json' },
+    });
+    const accountData = await accountRes.json().catch(() => ({}));
+
+    if (!accountRes.ok) {
+      return {
+        connected: false,
+        error: accountData.message || 'Clave API de Brevo inválida o sin permisos suficientes.',
+        code: accountData.code || 'unauthorized',
+      };
+    }
+
+    const sendersRes = await fetch('https://api.brevo.com/v3/senders', {
+      headers: { 'api-key': key, 'Accept': 'application/json' },
+    });
+    const sendersData = await sendersRes.json().catch(() => ({ senders: [] }));
+    const sendersList = Array.isArray(sendersData.senders) ? sendersData.senders : [];
+
+    const accountEmail = accountData.email || '';
+    const accountName = `${accountData.firstName || ''} ${accountData.lastName || ''}`.trim() || 'Usuario Brevo';
+    const planInfo = Array.isArray(accountData.plan) && accountData.plan[0] ? accountData.plan[0].type : 'Free';
+    const credits = Array.isArray(accountData.plan) && accountData.plan[0]?.credits !== undefined ? accountData.plan[0].credits : 300;
+
+    const cleanSender = extractCleanEmail(testSenderEmail);
+    const isSenderVerified = cleanSender
+      ? sendersList.some((s: any) => s.email?.toLowerCase() === cleanSender.toLowerCase() && s.active !== false) || cleanSender.toLowerCase() === accountEmail.toLowerCase()
+      : false;
+
+    return {
+      connected: true,
+      accountEmail,
+      accountName,
+      plan: planInfo,
+      credits,
+      senders: sendersList.map((s: any) => ({
+        id: s.id,
+        name: s.name,
+        email: s.email,
+        active: s.active !== false,
+      })),
+      testSenderEmail: cleanSender,
+      isSenderVerified,
+      recommendation: !isSenderVerified && cleanSender
+        ? `El correo '${cleanSender}' no está verificado en tu cuenta de Brevo. Te recomendamos usar tu correo verificado '${accountEmail}'.`
+        : null,
+    };
+  } catch (err: any) {
+    return {
+      connected: false,
+      error: `Error al contactar con el servidor de Brevo: ${err.message}`,
+      code: 'network_error',
+    };
+  }
+}
+
 /**
- * Send an email via Resend API (Free tier: 3,000 emails/mo) or log fallback
+ * Send an email via Brevo API (Free tier: 300 emails/day = 9,000/mo), Resend or n8n Webhook
  */
 export async function sendEmail({
   to,
@@ -67,8 +153,17 @@ export async function sendEmail({
   const brevoKey = config?.brevo_api_key || process.env.BREVO_API_KEY;
   if (brevoKey) {
     try {
-      const senderEmail = config?.email_remitente || process.env.EMAIL_FROM || 'notificaciones@tudominio.com';
-      const senderName = config?.nombre_classroom || 'REGALOS EXCLUSIVOS';
+      const rawSender = config?.email_remitente || process.env.BREVO_SENDER_EMAIL || process.env.EMAIL_FROM || '';
+      let cleanSenderEmail = extractCleanEmail(rawSender);
+      const senderName = extractSenderName(rawSender, config?.nombre_classroom || 'REGALOS EXCLUSIVOS');
+
+      // Auto-fallback a la cuenta oficial de Brevo si el remitente no está configurado o es placeholder
+      if (!cleanSenderEmail || cleanSenderEmail.includes('tudominio.com') || cleanSenderEmail.includes('resend.dev')) {
+        const diag = await diagnoseBrevo(brevoKey);
+        if (diag.connected && diag.accountEmail) {
+          cleanSenderEmail = diag.accountEmail;
+        }
+      }
 
       const res = await fetch('https://api.brevo.com/v3/smtp/email', {
         method: 'POST',
@@ -78,8 +173,8 @@ export async function sendEmail({
           'Accept': 'application/json',
         },
         body: JSON.stringify({
-          sender: { name: senderName, email: senderEmail },
-          to: [{ email: to }],
+          sender: { name: senderName, email: cleanSenderEmail },
+          to: [{ email: to.trim() }],
           subject,
           htmlContent: html,
         }),
@@ -98,10 +193,21 @@ export async function sendEmail({
         });
         return { success: true, id: logId, mode: 'brevo_live' };
       } else {
+        const errorMsg = data.message || `Error en Brevo (${res.status})`;
         console.warn('Brevo API error:', data);
+        emailHistoryLogs.unshift({
+          id: `err-${Date.now()}`,
+          to,
+          subject,
+          type,
+          status: 'fallido',
+          timestamp: new Date().toISOString(),
+        });
+        return { success: false, error: errorMsg, mode: 'brevo_error' };
       }
     } catch (err: any) {
       console.warn('Error calling Brevo API:', err.message);
+      return { success: false, error: err.message, mode: 'brevo_error' };
     }
   }
 
