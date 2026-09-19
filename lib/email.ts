@@ -165,6 +165,13 @@ export async function sendEmail({
         }
       }
 
+      // Generate clean plain text version to guarantee multi-part MIME deliverability
+      const plainText = html
+        .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+
       const res = await fetch('https://api.brevo.com/v3/smtp/email', {
         method: 'POST',
         headers: {
@@ -177,6 +184,7 @@ export async function sendEmail({
           to: [{ email: to.trim() }],
           subject,
           htmlContent: html,
+          textContent: plainText,
         }),
       });
 
@@ -275,25 +283,20 @@ export async function sendEmail({
 }
 
 /**
- * Generador maestro de plantilla de email ultra-profesional (Anti-Spam, responsive con imagen banner)
+ * Plantilla de Email 100% Humana, Anti-Spam & Conversacional (Estilo FÓRMULA 100K)
+ * CERO banners pesados, CERO badges llamativos, CERO disparadores de spam.
+ * Diseñada para caer directamente en la Bandeja Principal de Gmail / Outlook.
  */
 export function buildBrandedEmailHtml({
-  badge = 'BÓVEDA VIP · ACCESO EXCLUSIVO',
-  badgeColor = '#FDE047',
-  badgeTextColor = '#000000',
   title,
   name,
   bodyContent,
   ctaText,
   ctaUrl,
-  communityUrl = 'https://chat.whatsapp.com/LpfNzr7ZWh8KXyWvlBklQl',
-  brandName = 'REGALOS EXCLUSIVOS',
-  bannerUrl = 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80',
+  communityUrl,
+  brandName = 'Iván Sifuentes',
 }: {
-  badge?: string;
-  badgeColor?: string;
-  badgeTextColor?: string;
-  title: string;
+  title?: string;
   name: string;
   bodyContent: string;
   ctaText?: string;
@@ -301,100 +304,61 @@ export function buildBrandedEmailHtml({
   communityUrl?: string;
   brandName?: string;
   bannerUrl?: string;
+  badge?: string;
+  badgeColor?: string;
+  badgeTextColor?: string;
 }): string {
   const formattedBody = bodyContent
     .replace(/\{\{nombre\}\}/gi, name)
     .split('\n\n')
-    .map(p => `<p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.7; color: #374151;">${p.replace(/\n/g, '<br/>')}</p>`)
+    .map(p => `<p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.7; color: #1f2937;">${p.replace(/\n/g, '<br/>')}</p>`)
     .join('');
 
-  return `
-<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${title}</title>
+  <title>${title || 'Mensaje de ' + brandName}</title>
 </head>
-<body style="margin: 0; padding: 0; background-color: #f4f5f7; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
-  <div style="background-color: #f4f5f7; padding: 25px 10px;">
-    <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 18px; overflow: hidden; border: 1px solid #e5e7eb; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);">
-      
-      <!-- HERO BANNER IMAGE -->
-      <tr>
-        <td style="padding: 0; background-color: #0f172a; text-align: center;">
-          <img 
-            src="${bannerUrl}" 
-            alt="${brandName}" 
-            width="600" 
-            style="width: 100%; max-height: 220px; object-fit: cover; display: block; border-bottom: 3px solid #FACC15;" 
-          />
-        </td>
-      </tr>
+<body style="margin: 0; padding: 24px 12px; background-color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; color: #1f2937;">
+  <div style="max-width: 580px; margin: 0 auto;">
+    
+    <!-- CONTENIDO CONVERSACIONAL (Estilo Humano 1 a 1) -->
+    <div style="font-size: 15px; line-height: 1.7; color: #1f2937;">
+      ${formattedBody}
+    </div>
 
-      <!-- TOP BADGE BAR -->
-      <tr>
-        <td style="padding: 18px 26px 0 26px;">
-          <div style="display: inline-block; background-color: ${badgeColor}; color: ${badgeTextColor}; font-size: 11px; font-weight: 900; letter-spacing: 0.8px; text-transform: uppercase; padding: 6px 14px; border-radius: 20px;">
-            ${badge}
-          </div>
-        </td>
-      </tr>
+    <!-- ENLACE / BOTÓN LIMPIO Y DISCRETO -->
+    ${ctaUrl && ctaText ? `
+      <div style="margin: 28px 0 20px 0;">
+        <a href="${ctaUrl}" target="_blank" style="display: inline-block; background-color: #111827; color: #ffffff; font-size: 14px; font-weight: 700; text-decoration: none; padding: 12px 24px; border-radius: 8px;">
+          ${ctaText} &rarr;
+        </a>
+      </div>
+    ` : ''}
 
-      <!-- CONTENT BODY -->
-      <tr>
-        <td style="padding: 16px 28px 28px 28px;">
-          <h1 style="margin: 0 0 16px 0; font-size: 23px; font-weight: 900; color: #111827; letter-spacing: -0.5px; line-height: 1.3;">
-            ${title}
-          </h1>
+    ${communityUrl && communityUrl !== ctaUrl ? `
+      <p style="margin: 20px 0 0 0; font-size: 14px; color: #4b5563;">
+        P.D. También puedes unirte a nuestro <a href="${communityUrl}" target="_blank" style="color: #059669; font-weight: bold; text-decoration: underline;">grupo oficial de WhatsApp</a> si tienes dudas para resolverlas en vivo.
+      </p>
+    ` : ''}
 
-          <div style="font-size: 15px; color: #374151; line-height: 1.7;">
-            ${formattedBody}
-          </div>
+    <!-- FIRMA PERSONAL HUMANA -->
+    <div style="margin-top: 32px; padding-top: 20px; border-top: 1px solid #f3f4f6;">
+      <p style="margin: 0; font-size: 15px; font-weight: 700; color: #111827;">${brandName}</p>
+      <p style="margin: 4px 0 0 0; font-size: 12px; color: #6b7280;">Bóveda de Recursos & Automatizaciones IA</p>
+    </div>
 
-          <!-- PRIMARY CTA BUTTON -->
-          ${ctaUrl && ctaText ? `
-            <div style="text-align: center; margin: 32px 0 22px 0;">
-              <a href="${ctaUrl}" target="_blank" style="display: inline-block; background-color: #FACC15; color: #000000; font-size: 15px; font-weight: 900; text-decoration: none; padding: 15px 36px; border-radius: 14px; box-shadow: 0 4px 14px rgba(250, 204, 21, 0.4); text-transform: uppercase; letter-spacing: 0.5px;">
-                ${ctaText}
-              </a>
-            </div>
-          ` : ''}
+    <!-- PIE DE PÁGINA ANTI-SPAM LEGAL (Discreto) -->
+    <div style="margin-top: 36px; padding-top: 16px; border-top: 1px solid #e5e7eb; font-size: 11px; color: #9ca3af; line-height: 1.5;">
+      <p style="margin: 0 0 4px 0;">Recibes este mensaje porque te registraste en nuestra página para acceder a las herramientas y prompts de IA.</p>
+      <p style="margin: 0;">Para darte de baja o dejar de recibir estos avisos, responde a este correo con la palabra "Baja".</p>
+    </div>
 
-          <!-- COMMUNITY WHATSAPP CALLOUT -->
-          ${communityUrl ? `
-            <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 12px; padding: 14px 18px; margin-top: 24px; text-align: center;">
-              <p style="margin: 0 0 4px 0; font-size: 13px; font-weight: 700; color: #065f46;">
-                ¿Aún no estás en nuestro Grupo Oficial de WhatsApp?
-              </p>
-              <a href="${communityUrl}" target="_blank" style="color: #059669; font-size: 13px; font-weight: 800; text-decoration: underline;">
-                👉 Haz clic aquí para unirte a la Comunidad (+2,400 miembros)
-              </a>
-            </div>
-          ` : ''}
-        </td>
-      </tr>
-
-      <!-- FOOTER ANTI-SPAM -->
-      <tr>
-        <td style="background-color: #f9fafb; padding: 22px; border-top: 1px solid #f3f4f6; text-align: center;">
-          <p style="margin: 0 0 4px 0; font-size: 13px; font-weight: 800; color: #1f2937;">
-            ${brandName}
-          </p>
-          <p style="margin: 0 0 8px 0; font-size: 12px; color: #6b7280; line-height: 1.5;">
-            Recursos prácticos, prompts avanzados y automatizaciones con Inteligencia Artificial.
-          </p>
-          <p style="margin: 0; font-size: 11px; color: #9ca3af; line-height: 1.4;">
-            Recibiste este correo porque te registraste en nuestra página oficial. Cero spam, solo herramientas de alto valor.
-          </p>
-        </td>
-      </tr>
-
-    </table>
   </div>
 </body>
-</html>
-  `;
+</html>`;
 }
 
 /**
@@ -404,19 +368,17 @@ export async function sendWelcomeEmail(lead: Lead, config?: ClassroomConfig) {
   const communityUrl = config?.whatsapp_comunidad_url || 'https://chat.whatsapp.com/LpfNzr7ZWh8KXyWvlBklQl';
   const classroomTitle = config?.nombre_classroom || 'REGALOS EXCLUSIVOS';
 
-  const subject = `🎁 ¡Bienvenido ${lead.nombre}! Tu acceso a la ${classroomTitle} está listo`;
-  const bodyContent = `¡Hola ${lead.nombre}! 🎉\n\nTe damos la bienvenida oficial a nuestra **Bóveda Exclusiva de Recursos**. Ya tienes desbloqueado el acceso completo a todas las plantillas, prompts de creación de imágenes IA y guiones prácticos.\n\nPuedes ingresar en cualquier momento para poner en práctica las herramientas gratuitas.\n\nPara aprovechar al máximo este material y resolver dudas en vivo, únete a nuestra comunidad oficial en el botón de abajo.`;
+  const subject = `tu acceso a los recursos de IA`;
+  const bodyContent = `Hola ${lead.nombre},\n\nTe confirmo que ya tienes tu acceso listo a las herramientas y prompts de la Bóveda.\n\nPuedes entrar en cualquier momento para revisar los prompts de personajes y las plantillas que tenemos preparadas.\n\nTe dejo el enlace directo para que puedas empezar:\n\nSi tienes alguna pregunta mientras los pruebas, me puedes responder a este mismo correo o entrar al grupo de WhatsApp.`;
 
   const html = buildBrandedEmailHtml({
-    badge: 'ACCESO CONFIRMADO · BÓVEDA VIP',
-    title: `¡Bienvenido a ${classroomTitle}!`,
+    title: `Tu acceso a la Bóveda`,
     name: lead.nombre,
     bodyContent,
-    ctaText: '🚀 Entrar a la Bóveda de Recursos',
+    ctaText: 'Entrar a la Bóveda de Recursos',
     ctaUrl: communityUrl,
     communityUrl,
     brandName: classroomTitle,
-    bannerUrl: config?.banner_url || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80',
   });
 
   return sendEmail({ to: lead.email, subject, html, type: 'bienvenida', config });
@@ -436,20 +398,18 @@ export async function sendContentUpdateEmail({
   moduleDesc?: string;
   config?: ClassroomConfig;
 }) {
-  const classroomTitle = config?.nombre_classroom || 'Bóveda de Recursos';
-  const subject = `🔥 Nuevo contenido agregado: "${moduleTitle}" en la ${classroomTitle}`;
-  const bodyContent = `¡Hola ${lead.nombre}! 🚀\n\nAcabamos de subir nuevo material exclusivo a tu Bóveda:\n\n**${moduleTitle}**\n${moduleDesc || 'Nuevas herramientas y guiones prácticos listos para implementar.'}\n\nIngresa ahora mismo a tu cuenta para ponerlo en práctica.`;
+  const classroomTitle = config?.nombre_classroom || 'REGALOS EXCLUSIVOS';
+  const subject = `nuevo contenido: ${moduleTitle}`;
+  const bodyContent = `Hola ${lead.nombre},\n\nTe aviso rápido que acabo de subir una nueva actualización a la Bóveda:\n\n**${moduleTitle}**\n${moduleDesc || 'Nuevas herramientas y prompts listos para implementar.'}\n\nPuedes revisarlo directamente en tu cuenta:`;
 
   const html = buildBrandedEmailHtml({
-    badge: '⚡ ACTUALIZACIÓN DE CONTENIDO',
-    title: `Nuevo Contenido: ${moduleTitle}`,
+    title: moduleTitle,
     name: lead.nombre,
     bodyContent,
-    ctaText: '👉 Ver Novedades en el Classroom',
+    ctaText: 'Ver contenido en la Bóveda',
     ctaUrl: config?.whatsapp_comunidad_url || '#',
     communityUrl: config?.whatsapp_comunidad_url,
     brandName: classroomTitle,
-    bannerUrl: config?.banner_url || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80',
   });
 
   return sendEmail({ to: lead.email, subject, html, type: 'actualizacion', config });

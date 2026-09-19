@@ -57,12 +57,12 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
   const [isSendingTest, setIsSendingTest] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
 
-  // Email Composer state (Chat Style)
-  const [emailSubject, setEmailSubject] = useState('⚡ Recordatorio importante: Acceso a tus herramientas exclusivas');
+  // Email Composer state (FÓRMULA 100K Conversational Style)
+  const [emailSubject, setEmailSubject] = useState('tu acceso a los recursos de IA');
   const [emailBody, setEmailBody] = useState(
-    'Hola {{nombre}},\n\nTe recordamos que tienes recursos, guiones y plantillas exclusivas disponibles en tu Bóveda.\n\nPuedes ingresar en cualquier momento para poner en práctica las herramientas gratuitas.\n\nSi deseas que implementemos estas automatizaciones contigo paso a paso en una sesión privada 1 a 1, escríbenos directamente a nuestro WhatsApp oficial.'
+    'Hola {{nombre}},\n\nTe escribo para confirmarte que ya tienes disponible el acceso a las plantillas y los prompts de IA en la Bóveda.\n\nEn la segunda lección agregué el Superprompt completo para crear todos los ángulos y planos de tu personaje en ChatGPT con fondo limpio.\n\nPega el prompt tal cual junto con la foto de referencia para que te dé las tomas de frente, perfil y 3/4 con el mismo rostro.\n\nPuedes entrar directamente desde este enlace:\n\nSi tienes alguna pregunta mientras los pruebas, me puedes responder a este correo o escribir a nuestro WhatsApp.'
   );
-  const [ctaButtonText, setCtaButtonText] = useState(config.cta_oferta_texto || '🔥 Hablar por WhatsApp');
+  const [ctaButtonText, setCtaButtonText] = useState('Entrar a la Bóveda de Recursos');
   const [ctaButtonUrl, setCtaButtonUrl] = useState(config.cta_oferta_url || config.whatsapp_comunidad_url || 'https://chat.whatsapp.com/LpfNzr7ZWh8KXyWvlBklQl');
   
   // Broadcast sending state
@@ -165,7 +165,6 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
           bodyContent: emailBody,
           ctaText: ctaButtonText,
           ctaUrl: ctaButtonUrl,
-          bannerUrl: config.banner_url,
           brevo_api_key: apiKey.trim() || undefined,
           email_remitente: senderEmail.trim() || undefined,
         }),
@@ -174,7 +173,7 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
       if (data.success && data.mode !== 'brevo_error') {
         setTestResult({
           success: true,
-          message: `✅ ¡Correo profesional con banner enviado exitosamente a ${testEmailTo}! Revisa tu bandeja de entrada o spam (ID: ${data.id || 'ok'}).`,
+          message: `✅ ¡Correo de prueba enviado a ${testEmailTo}! Revisa tu bandeja de entrada (ID: ${data.id || 'ok'}).`,
         });
       } else {
         setTestResult({
@@ -203,7 +202,7 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
       return;
     }
 
-    if (!confirm(`¿Confirmas enviar este correo profesional con banner a los ${leads.length} prospectos registrados?`)) {
+    if (!confirm(`¿Confirmas enviar este correo a los ${leads.length} prospectos registrados?`)) {
       return;
     }
 
@@ -221,7 +220,6 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
           bodyContent: emailBody,
           ctaText: ctaButtonText,
           ctaUrl: ctaButtonUrl,
-          bannerUrl: config.banner_url,
           brevo_api_key: apiKey.trim() || undefined,
           email_remitente: senderEmail.trim() || undefined,
         }),
@@ -248,26 +246,26 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
     }
   };
 
-  // Quick preset templates
+  // Quick preset templates (FÓRMULA 100K Humanized & Anti-Spam)
   const applyPreset = (preset: 'recordatorio' | 'nueva_clase' | 'comunidad') => {
     if (preset === 'recordatorio') {
-      setEmailSubject('⚡ Recordatorio importante: Acceso a tus herramientas exclusivas');
+      setEmailSubject('tu acceso a los recursos de IA');
       setEmailBody(
-        'Hola {{nombre}},\n\nTe recordamos que tienes recursos, guiones y plantillas exclusivas disponibles en tu Bóveda.\n\nPuedes ingresar en cualquier momento para poner en práctica las herramientas gratuitas.\n\nSi deseas que implementemos estas automatizaciones contigo paso a paso en una sesión privada 1 a 1, escríbenos directamente a nuestro WhatsApp oficial.'
+        'Hola {{nombre}},\n\nTe escribo para confirmarte que ya tienes disponible el acceso a las plantillas y los prompts de IA en la Bóveda.\n\nEn la segunda lección agregué el Superprompt completo para crear todos los ángulos y planos de tu personaje en ChatGPT con fondo limpio.\n\nPega el prompt tal cual junto con la foto de referencia para que te dé las tomas de frente, perfil y 3/4 con el mismo rostro.\n\nPuedes entrar directamente desde este enlace:\n\nSi tienes alguna pregunta mientras los pruebas, me puedes responder a este correo o escribir a nuestro WhatsApp.'
       );
-      setCtaButtonText(config.cta_oferta_texto || '🔥 Hablar por WhatsApp');
+      setCtaButtonText('Entrar a la Bóveda de Recursos');
     } else if (preset === 'nueva_clase') {
-      setEmailSubject('🎁 ¡Nuevo recurso disponible en la Bóveda!');
+      setEmailSubject('aquí tienes el prompt para los ángulos de tu personaje');
       setEmailBody(
-        'Hola {{nombre}},\n\nAcabamos de subir una nueva actualización a la Bóveda con nuevos prompts de alta conversión y material listo para implementar.\n\nAccede ahora para revisar el nuevo contenido antes de que expire el acceso libre.'
+        'Hola {{nombre}},\n\nAcabo de subir una nueva actualización a la Bóveda con el prompt para generar la hoja completa de ángulos (frente, 3/4 y perfil) de tu personaje manteniendo el mismo rostro y edad exacta.\n\nSolo tienes que pegar el prompt en ChatGPT junto con tu foto de referencia.\n\nTe dejo el enlace para que lo revises ahora:'
       );
-      setCtaButtonText('🚀 Ver Nuevo Contenido');
+      setCtaButtonText('Ver nuevo prompt en la Bóveda');
     } else if (preset === 'comunidad') {
-      setEmailSubject('💬 Únete a nuestra comunidad VIP de WhatsApp');
+      setEmailSubject('¿pudiste probar las plantillas de IA?');
       setEmailBody(
-        'Hola {{nombre}},\n\n¿Aún no estás en nuestro grupo oficial de WhatsApp?\n\nAhí compartimos atajos diarios de inteligencia artificial, respondemos preguntas en vivo y notificamos antes que nadie sobre nuevas plantillas gratuitas.'
+        'Hola {{nombre}},\n\nQuería preguntarte si ya pudiste poner en práctica las herramientas que te compartí en la Bóveda.\n\nSi tuviste alguna traba o quieres resolver dudas con tus prompts en vivo, estamos activos en el grupo oficial de WhatsApp ayudando a implementar.\n\nTe dejo el acceso al grupo por si todavía no estás dentro:'
       );
-      setCtaButtonText('👉🏻 Entrar a la Comunidad VIP');
+      setCtaButtonText('Entrar al grupo de WhatsApp');
     }
   };
 
@@ -353,10 +351,10 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
               </p>
             </div>
 
-            {/* Quick Presets */}
+            {/* Quick Presets (FÓRMULA 100K) */}
             <div>
               <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-2">
-                Plantillas Rápidas:
+                Plantillas Humanizadas (Anti-Spam):
               </span>
               <div className="flex flex-wrap gap-2">
                 <button
@@ -364,21 +362,21 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
                   onClick={() => applyPreset('recordatorio')}
                   className="px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100 transition-colors"
                 >
-                  ⚡ Recordatorio Bóveda
+                  ✉️ Acceso Bóveda
                 </button>
                 <button
                   type="button"
                   onClick={() => applyPreset('nueva_clase')}
                   className="px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-50 text-blue-900 border border-blue-200 hover:bg-blue-100 transition-colors"
                 >
-                  🎁 Nuevo Recurso
+                  🎯 Prompt Personaje
                 </button>
                 <button
                   type="button"
                   onClick={() => applyPreset('comunidad')}
                   className="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-900 border border-emerald-200 hover:bg-emerald-100 transition-colors"
                 >
-                  💬 Comunidad VIP
+                  💬 Dudas en WhatsApp
                 </button>
               </div>
             </div>
@@ -386,13 +384,13 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
             {/* Subject */}
             <div>
               <label className="block text-[11px] font-bold text-gray-600 uppercase tracking-wider mb-1">
-                Asunto del Correo
+                Asunto del Correo (Escríbelo en minúsculas y natural para evitar Spam)
               </label>
               <input
                 type="text"
                 value={emailSubject}
                 onChange={(e) => setEmailSubject(e.target.value)}
-                placeholder="Ej. ⚡ Recordatorio importante: Acceso a tu material"
+                placeholder="Ej. tu acceso a los recursos de IA"
                 className="w-full px-3.5 py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-sm text-gray-900 outline-none focus:border-amber-500 focus:bg-white"
               />
             </div>
@@ -403,7 +401,7 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
                 Mensaje Principal
               </label>
               <textarea
-                rows={6}
+                rows={7}
                 value={emailBody}
                 onChange={(e) => setEmailBody(e.target.value)}
                 className="w-full px-3.5 py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-sm text-gray-900 outline-none focus:border-amber-500 focus:bg-white leading-relaxed"
@@ -415,26 +413,26 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
               <div>
                 <label className="block text-[11px] font-bold text-gray-600 uppercase tracking-wider mb-1">
-                  Texto del Botón CTA
+                  Texto del Enlace / Botón
                 </label>
                 <input
                   type="text"
                   value={ctaButtonText}
                   onChange={(e) => setCtaButtonText(e.target.value)}
-                  placeholder="🔥 Hablar por WhatsApp"
+                  placeholder="Entrar a la Bóveda de Recursos"
                   className="w-full px-3 py-2 rounded-xl bg-gray-50 border border-gray-200 text-xs font-bold text-gray-900 outline-none focus:border-amber-500"
                 />
               </div>
 
               <div>
                 <label className="block text-[11px] font-bold text-gray-600 uppercase tracking-wider mb-1">
-                  Enlace del Botón
+                  Enlace de Destino
                 </label>
                 <input
                   type="text"
                   value={ctaButtonUrl}
                   onChange={(e) => setCtaButtonUrl(e.target.value)}
-                  placeholder="https://chat.whatsapp.com/..."
+                  placeholder="https://..."
                   className="w-full px-3 py-2 rounded-xl bg-gray-50 border border-gray-200 text-xs text-gray-900 outline-none focus:border-amber-500"
                 />
               </div>
@@ -486,77 +484,71 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
           <div className="lg:col-span-5 space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-xs font-black text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
-                <Eye className="w-4 h-4 text-amber-500" />
-                <span>Vista Previa del Prospecto</span>
+                <Eye className="w-4 h-4 text-emerald-600" />
+                <span>Vista Previa (Formato Humano 1 a 1)</span>
               </span>
               <span className="text-[11px] text-gray-400">
                 Remitente: {senderEmail || 'Auto-detectado de Brevo'}
               </span>
             </div>
 
-            {/* Email Mockup Container with Hero Banner Image */}
+            {/* Email Mockup Container - Clean Human 1 to 1 Format (Cero Banner / Anti-Spam) */}
             <div className="bg-gray-100 p-3 sm:p-4 rounded-2xl border border-gray-200">
-              <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+              <div className="bg-white rounded-xl shadow-xs border border-gray-200 p-5 space-y-4">
                 
-                {/* Hero Banner Image */}
-                <div className="relative w-full h-36 sm:h-40 bg-slate-900 overflow-hidden border-b-2 border-yellow-400">
-                  <img 
-                    src={config.banner_url || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80"}
-                    alt="Banner Bóveda VIP"
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-3">
-                    <span className="text-[10px] font-black uppercase tracking-wider text-yellow-400 bg-black/70 px-2 py-0.5 rounded">
-                      {senderName}
+                {/* Sender Header with Avatar simulation */}
+                <div className="flex items-center space-x-3 pb-3 border-b border-gray-100">
+                  <div className="w-9 h-9 rounded-full bg-slate-800 text-yellow-400 font-bold text-xs flex items-center justify-center shadow-xs flex-shrink-0">
+                    {senderName ? senderName.substring(0, 2).toUpperCase() : 'IV'}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-gray-900 truncate">
+                        {senderName}
+                      </span>
+                      <span className="text-[10px] text-gray-400">12:45 p. m.</span>
+                    </div>
+                    <span className="text-[10px] text-gray-400 block truncate">
+                      para: {leads[0]?.nombre || 'Iván'} &lt;{leads[0]?.email || 'prospecto@gmail.com'}&gt;
                     </span>
                   </div>
                 </div>
 
-                <div className="p-5 space-y-4">
-                  {/* Top VIP Badge */}
-                  <div>
-                    <span className="inline-block bg-[#FDE047] text-black font-black text-[10px] tracking-wider uppercase py-1 px-3 rounded-full">
-                      BÓVEDA VIP · RECORDATORIO OFICIAL
-                    </span>
-                  </div>
+                {/* Subject Preview */}
+                <div>
+                  <h4 className="text-sm font-bold text-gray-900 leading-snug">
+                    {emailSubject.replace(/\{\{nombre\}\}/gi, leads[0]?.nombre || 'Iván')}
+                  </h4>
+                </div>
 
-                  {/* Subject Preview */}
-                  <div className="pb-3 border-b border-gray-100">
-                    <span className="text-[10px] text-gray-400 font-bold block uppercase">Asunto</span>
-                    <h4 className="text-sm font-bold text-gray-900 mt-0.5">
-                      {emailSubject.replace(/\{\{nombre\}\}/gi, leads[0]?.nombre || 'Iván')}
-                    </h4>
-                  </div>
+                {/* Body Preview (Clean 1 to 1 conversation) */}
+                <div className="text-xs sm:text-[13px] text-gray-700 leading-relaxed whitespace-pre-line">
+                  {emailBody.replace(/\{\{nombre\}\}/gi, leads[0]?.nombre || 'Iván')}
+                </div>
 
-                  {/* Body Preview */}
-                  <div className="text-xs sm:text-[13px] text-gray-700 leading-relaxed whitespace-pre-line">
-                    {emailBody.replace(/\{\{nombre\}\}/gi, leads[0]?.nombre || 'Iván')}
-                  </div>
-
-                  {/* CTA Button Preview */}
-                  {ctaButtonUrl && (
-                    <div className="pt-2 text-center">
-                      <div className="inline-block bg-[#FACC15] text-black font-black text-xs px-6 py-2.5 rounded-xl shadow-md uppercase tracking-wide">
-                        {ctaButtonText}
-                      </div>
+                {/* CTA Button Preview (Discreet & Clean) */}
+                {ctaButtonUrl && (
+                  <div className="pt-1">
+                    <div className="inline-block bg-gray-900 text-white font-bold text-xs px-4 py-2 rounded-lg shadow-xs">
+                      {ctaButtonText} &rarr;
                     </div>
-                  )}
-
-                  {/* Community WhatsApp Callout Box */}
-                  <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-center">
-                    <p className="text-[11px] font-bold text-emerald-900 mb-0.5">
-                      ¿Aún no estás en nuestro Grupo Oficial de WhatsApp?
-                    </p>
-                    <span className="text-[11px] font-extrabold text-emerald-700 underline">
-                      👉 Haz clic aquí para unirte a la Comunidad (+2,400 miembros)
-                    </span>
                   </div>
+                )}
 
-                  {/* Footer Anti-Spam Preview */}
-                  <div className="pt-3 border-t border-gray-100 text-center text-[10px] text-gray-400 leading-relaxed">
-                    <p className="font-bold text-gray-600 mb-0.5">{senderName}</p>
-                    <p>Recibiste este correo porque te registraste en nuestra web. Cero spam, solo herramientas de alto valor.</p>
-                  </div>
+                {/* WhatsApp P.D. Note */}
+                <p className="text-[11px] text-gray-500 leading-relaxed">
+                  P.D. También puedes unirte a nuestro <span className="text-emerald-700 font-bold underline cursor-pointer">grupo oficial de WhatsApp</span> si tienes dudas para resolverlas en vivo.
+                </p>
+
+                {/* Signature Preview */}
+                <div className="pt-3 border-t border-gray-100">
+                  <p className="text-xs font-bold text-gray-900">{senderName}</p>
+                  <p className="text-[10px] text-gray-400">Bóveda de Recursos & Herramientas de IA</p>
+                </div>
+
+                {/* Footer Anti-Spam Preview */}
+                <div className="pt-2 border-t border-gray-100 text-[10px] text-gray-400 leading-relaxed">
+                  <p>Recibes este correo porque te registraste en nuestra página oficial. Cero spam.</p>
                 </div>
 
               </div>
@@ -866,6 +858,72 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
               >
                 <span>Guardar Ajustes de Brevo</span>
               </button>
+            </div>
+          </div>
+
+          {/* GUÍA 1: FOTO DE PERFIL EN GMAIL (AVATAR) */}
+          <div className="p-5 bg-purple-50/60 rounded-xl border border-purple-200 space-y-3">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-purple-600 text-white font-bold text-xs flex items-center justify-center flex-shrink-0">
+                👤
+              </div>
+              <div>
+                <h4 className="text-xs font-black text-purple-950 uppercase tracking-wider">
+                  ¿Dónde se pone la Foto de Perfil que aparece al lado del correo?
+                </h4>
+                <p className="text-[11px] text-purple-800">
+                  Brevo no tiene un botón de foto porque el protocolo de correo no la incluye en el mensaje.
+                </p>
+              </div>
+            </div>
+
+            <p className="text-[12px] text-gray-700 leading-relaxed">
+              Gmail y los celulares muestran la foto del remitente consultando servicios de identidad global. Para que aparezca tu foto real en lugar de un círculo vacío:
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 text-xs">
+              <div className="p-3 bg-white rounded-lg border border-purple-200 space-y-1">
+                <span className="font-bold text-purple-900 block">Opción 1: Gravatar (Recomendado y Gratis)</span>
+                <p className="text-[11px] text-gray-600 leading-relaxed">
+                  Entra a <a href="https://gravatar.com" target="_blank" rel="noopener noreferrer" className="text-purple-700 underline font-bold">gravatar.com</a>, crea tu cuenta con el correo de tu remitente y sube tu foto. En minutos Gmail la mostrará.
+                </p>
+              </div>
+
+              <div className="p-3 bg-white rounded-lg border border-purple-200 space-y-1">
+                <span className="font-bold text-purple-900 block">Opción 2: Perfil de Google</span>
+                <p className="text-[11px] text-gray-600 leading-relaxed">
+                  Si tu correo remitente es una cuenta de Google Workspace o Gmail, ve a <a href="https://myaccount.google.com" target="_blank" rel="noopener noreferrer" className="text-purple-700 underline font-bold">myaccount.google.com</a> y sube tu foto en tu perfil.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* GUÍA 2: POR QUÉ SALE EL OCTÁGONO GRIS Y CÓMO EVITAR SPAM */}
+          <div className="p-5 bg-amber-50/70 rounded-xl border border-amber-300 space-y-3">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-amber-500 text-white font-bold text-sm flex items-center justify-center flex-shrink-0">
+                !
+              </div>
+              <div>
+                <h4 className="text-xs font-black text-amber-950 uppercase tracking-wider">
+                  ¿Por qué salió el octágono gris con &quot;!&quot; y el correo cayó en Spam?
+                </h4>
+                <p className="text-[11px] text-amber-800">
+                  Google aplica reglas muy estrictas de seguridad (DMARC, SPF y DKIM).
+                </p>
+              </div>
+            </div>
+
+            <div className="text-[12px] text-amber-950 space-y-2 leading-relaxed">
+              <p>
+                <strong>1. Causa Técnica Principal (El Remitente):</strong> Si en Brevo colocas un correo <code className="bg-white px-1.5 py-0.5 rounded border border-amber-300 text-amber-900 font-mono text-[11px]">@gmail.com</code>, Google detecta que el correo no salió de los servidores de Google, sino de Brevo. Por política de seguridad, Gmail le coloca el octágono de advertencia <code>!</code> y lo envía a Spam como posible suplantación.
+              </p>
+              <p>
+                <strong>2. La Solución para Cero Spam:</strong> La forma profesional de enviar correos masivos es utilizando un <strong>correo con dominio propio</strong> (ej: <code>ivan@tudominio.com</code>) y activar los registros <strong>SPF y DKIM</strong> que Brevo te da en su sección <em>Remitentes e IP &gt; Dominios</em>.
+              </p>
+              <p>
+                <strong>3. Estilo Humano FÓRMULA 100K (Ya Aplicado):</strong> Eliminamos el banner pesado de imagen y los badges corporativos. Ahora el mensaje se envía como una conversación limpia de 1 a 1, con texto plano alternativo (Multi-part MIME), lo que reduce drásticamente el puntaje de spam.
+              </p>
             </div>
           </div>
 
