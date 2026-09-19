@@ -89,15 +89,19 @@ export default function AdminDashboardPage() {
   const refreshData = async () => {
     try {
       const [contentRes, leadsRes, configRes] = await Promise.all([
-        fetch('/api/content'),
-        fetch('/api/leads'),
-        fetch('/api/config')
+        fetch('/api/content', { cache: 'no-store' }),
+        fetch('/api/leads', { cache: 'no-store' }),
+        fetch('/api/config', { cache: 'no-store' })
       ]);
 
       if (contentRes.ok) {
         const cData = await contentRes.json();
         if (cData.modulos && cData.modulos.length > 0) {
           setModulos(cData.modulos);
+          try {
+            localStorage.setItem('boveda_modulos_cache', JSON.stringify(cData.modulos));
+          } catch (e) {}
+
           if (activeModuleForLessons) {
             const updated = cData.modulos.find((m: Modulo) => m.id === activeModuleForLessons.id);
             if (updated) setActiveModuleForLessons(updated);
@@ -110,7 +114,12 @@ export default function AdminDashboardPage() {
       }
       if (configRes.ok) {
         const confData = await configRes.json();
-        if (confData.config) setConfig(confData.config);
+        if (confData.config) {
+          setConfig(confData.config);
+          try {
+            localStorage.setItem('boveda_config_cache', JSON.stringify(confData.config));
+          } catch (e) {}
+        }
       }
     } catch (err) {
       console.error('Error refreshing admin data:', err);
@@ -182,44 +191,54 @@ export default function AdminDashboardPage() {
     }
   };
 
-  // --- COVER FILE UPLOAD FROM COMPUTER ---
+  // --- COVER FILE UPLOAD WITH CLIENT-SIDE CANVAS COMPRESSION (100% FAIL-PROOF FOR VERCEL) ---
   const handleCoverFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setIsUploadingCover(true);
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await res.json();
-      if (data.success && data.url) {
-        setFormModCover(data.url);
-      } else {
-        // Fallback: Read locally as Data URL
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          if (ev.target?.result) {
-            setFormModCover(ev.target.result as string);
-          }
-        };
-        reader.readAsDataURL(file);
-      }
-    } catch (err) {
-      // Offline / client-side fallback
       const reader = new FileReader();
-      reader.onload = (ev) => {
-        if (ev.target?.result) {
-          setFormModCover(ev.target.result as string);
-        }
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          // Resize and compress to max 1280x720 (16:9)
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          const maxWidth = 1280;
+          const maxHeight = 720;
+
+          if (width > maxWidth || height > maxHeight) {
+            const ratio = Math.min(maxWidth / width, maxHeight / height);
+            width = Math.round(width * ratio);
+            height = Math.round(height * ratio);
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            // Ultra-lightweight WebP / JPEG (results in ~30-50 KB)
+            const compressed = canvas.toDataURL('image/webp', 0.82);
+            setFormModCover(compressed);
+          }
+          setIsUploadingCover(false);
+        };
+        img.onerror = () => {
+          alert('No se pudo procesar la imagen. Intenta con otro archivo.');
+          setIsUploadingCover(false);
+        };
+        img.src = event.target?.result as string;
+      };
+      reader.onerror = () => {
+        alert('Error al leer el archivo');
+        setIsUploadingCover(false);
       };
       reader.readAsDataURL(file);
-    } finally {
+    } catch (err) {
+      alert('Error al procesar la imagen');
       setIsUploadingCover(false);
     }
   };
@@ -397,7 +416,7 @@ export default function AdminDashboardPage() {
     setLessonModalOpen(true);
   };
 
-  // --- SAVE LESSON ---
+  // --- SAVE LESSON (WITH 0MS OPTIMISTIC UPDATE) ---
   const handleSaveLesson = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formLessonTitle.trim() || !activeModuleForLessons) return;
@@ -416,6 +435,56 @@ export default function AdminDashboardPage() {
         tipo: formLessonVideo.trim() ? 'video' : formLessonFile.trim() ? 'enlace' : 'texto',
       };
 
+      // 1. Optimistic Instant UI Update (0ms delay)
+      if (editingLesson) {
+        const updatedRec = { ...editingLesson, ...payload } as Recurso;
+        setActiveModuleForLessons(prev => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            recursos: (prev.recursos || []).map(r => r.id === editingLesson.id ? updatedRec : r)
+          };
+        });
+        setModulos(prev => prev.map(m => {
+          if (m.id !== activeModuleForLessons.id) return m;
+          return {
+            ...m,
+            recursos: (m.recursos || []).map(r => r.id === editingLesson.id ? updatedRec : r)
+          };
+        }));
+      } else {
+        const newRec: Recurso = {
+          id: `rec-${Date.now()}`,
+          modulo_id: activeModuleForLessons.id,
+          titulo: payload.titulo!,
+          descripcion: payload.descripcion || '',
+          video_url: payload.video_url,
+          archivo_url: payload.archivo_url,
+          enlace_url: payload.enlace_url,
+          publicado: payload.publicado ?? true,
+          orden: payload.orden || 1,
+          tipo: payload.tipo || 'video',
+          created_at: new Date().toISOString()
+        };
+        setActiveModuleForLessons(prev => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            recursos: [...(prev.recursos || []), newRec]
+          };
+        });
+        setModulos(prev => prev.map(m => {
+          if (m.id !== activeModuleForLessons.id) return m;
+          return {
+            ...m,
+            recursos: [...(m.recursos || []), newRec]
+          };
+        }));
+      }
+
+      setLessonModalOpen(false);
+
+      // 2. Persist to API / Supabase
       const res = await fetch('/api/content', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -426,21 +495,40 @@ export default function AdminDashboardPage() {
       });
 
       if (res.ok) {
-        setLessonModalOpen(false);
+        refreshData();
+      } else {
+        alert('Error al guardar en la base de datos');
         refreshData();
       }
     } catch (err) {
       alert('Error al guardar lección');
+      refreshData();
     }
   };
 
-  // --- DELETE LESSON ---
+  // --- DELETE LESSON (WITH 0MS OPTIMISTIC UPDATE) ---
   const handleDeleteLesson = async (lessonId: string) => {
     if (!activeModuleForLessons) return;
     if (!confirm('¿Eliminar esta lección?')) return;
 
+    // Optimistic delete
+    setActiveModuleForLessons(prev => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        recursos: (prev.recursos || []).filter(r => r.id !== lessonId)
+      };
+    });
+    setModulos(prev => prev.map(m => {
+      if (m.id !== activeModuleForLessons.id) return m;
+      return {
+        ...m,
+        recursos: (m.recursos || []).filter(r => r.id !== lessonId)
+      };
+    }));
+
     try {
-      await fetch('/api/content', {
+      const res = await fetch('/api/content', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -449,9 +537,12 @@ export default function AdminDashboardPage() {
           recursoId: lessonId,
         }),
       });
-      refreshData();
+      if (res.ok) {
+        refreshData();
+      }
     } catch (err) {
       alert('Error al eliminar lección');
+      refreshData();
     }
   };
 
@@ -1528,58 +1619,98 @@ export default function AdminDashboardPage() {
                 />
               </div>
 
-              {/* COVER IMAGE: URL OR LOCAL FILE UPLOAD (AS REQUESTED) */}
-              <div>
-                <label className="block text-[11px] font-bold text-gray-600 uppercase tracking-wider mb-1">
-                  Foto de Portada del Módulo (Aspecto 16:9)
-                </label>
-                <div className="mb-2.5 p-2.5 bg-amber-50/90 border border-amber-200/90 rounded-xl text-[11px] text-amber-900 leading-normal flex items-start space-x-2">
-                  <span className="text-sm">📐</span>
-                  <div>
-                    <strong className="font-bold">Tamaño recomendado:</strong> 1280 x 720 px (o mínimo 640 x 360 px, proporción 16:9). Formatos: JPG, PNG o WebP (máx. 2 MB).
-                  </div>
+              {/* DEDICATED IMAGE UPLOAD SECTION (100% RELIABLE & INTUITIVE) */}
+              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-xs font-black text-slate-900 uppercase tracking-wider">
+                    🖼️ Foto de Portada (Aspecto 16:9)
+                  </label>
+                  <span className="text-[11px] text-slate-500 font-semibold">1280 × 720 px</span>
                 </div>
 
-                {/* File picker button */}
-                <div className="flex items-center gap-2 mb-2">
+                {/* Big Drag & Drop / Click Upload Box */}
+                {!formModCover ? (
                   <label
                     htmlFor="cover-file-upload"
-                    className="inline-flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-300 cursor-pointer transition-colors"
+                    className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-amber-300 hover:border-amber-500 rounded-xl bg-amber-50/40 hover:bg-amber-50/70 transition-all cursor-pointer group text-center"
                   >
-                    <Upload className="w-3.5 h-3.5 text-gray-600" />
-                    <span>{isUploadingCover ? 'Subiendo...' : '📁 Subir foto desde tu computadora'}</span>
-                  </label>
-                  <input
-                    id="cover-file-upload"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleCoverFileUpload}
-                    className="hidden"
-                  />
-                  <span className="text-[11px] text-gray-400">o pega la URL abajo</span>
-                </div>
-
-                <input
-                  type="text"
-                  value={formModCover}
-                  onChange={(e) => setFormModCover(e.target.value)}
-                  placeholder="https://... o /uploads/..."
-                  className="w-full px-3 py-2 rounded-xl bg-gray-50 border border-gray-200 text-xs text-gray-900 outline-none focus:border-amber-500 font-mono"
-                />
-
-                {/* Live Preview */}
-                {formModCover && (
-                  <div className="mt-2 aspect-video w-full rounded-xl overflow-hidden border border-gray-200 bg-gray-100 relative">
-                    <img
-                      src={formModCover}
-                      alt="Vista previa"
-                      className="w-full h-full object-cover"
-                    />
-                    <span className="absolute bottom-1 right-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">
-                      Vista previa
+                    <div className="w-10 h-10 rounded-xl bg-amber-400/90 text-slate-950 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform shadow-xs">
+                      <Upload className="w-5 h-5" />
+                    </div>
+                    <span className="text-xs font-black text-slate-900">
+                      {isUploadingCover ? 'Optimizando foto...' : '📁 Toca aquí para subir imagen'}
                     </span>
+                    <span className="text-[11px] text-slate-500 mt-0.5">
+                      Desde tu celular o computadora (JPG, PNG, WebP)
+                    </span>
+                    <input
+                      id="cover-file-upload"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleCoverFileUpload}
+                      className="hidden"
+                    />
+                  </label>
+                ) : (
+                  <div className="space-y-2">
+                    {/* Live 16:9 Preview */}
+                    <div className="aspect-video w-full rounded-xl overflow-hidden border border-slate-300 bg-slate-100 relative shadow-inner group">
+                      <img
+                        src={formModCover}
+                        alt="Vista previa"
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                        <label
+                          htmlFor="cover-file-upload-replace"
+                          className="px-3 py-1.5 rounded-lg bg-white text-slate-900 text-xs font-bold shadow-md cursor-pointer hover:bg-slate-100"
+                        >
+                          Cambiar imagen
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => setFormModCover('')}
+                          className="px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs font-bold shadow-md hover:bg-red-700"
+                        >
+                          Quitar
+                        </button>
+                      </div>
+                      <input
+                        id="cover-file-upload-replace"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleCoverFileUpload}
+                        className="hidden"
+                      />
+                    </div>
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span className="text-emerald-700 font-bold flex items-center gap-1">
+                        ✓ Imagen lista y optimizada
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setFormModCover('')}
+                        className="text-red-600 hover:text-red-800 font-bold cursor-pointer"
+                      >
+                        Eliminar foto
+                      </button>
+                    </div>
                   </div>
                 )}
+
+                {/* Optional URL input toggle */}
+                <details className="mt-2 text-xs text-slate-500">
+                  <summary className="cursor-pointer hover:text-slate-800 font-medium select-none">
+                    🔗 O pegar URL de imagen externa
+                  </summary>
+                  <input
+                    type="text"
+                    value={formModCover}
+                    onChange={(e) => setFormModCover(e.target.value)}
+                    placeholder="https://images.unsplash.com/..."
+                    className="w-full mt-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs text-slate-900 outline-none font-mono"
+                  />
+                </details>
               </div>
 
               {/* Lock Switch */}
@@ -1695,15 +1826,58 @@ export default function AdminDashboardPage() {
 
               <div>
                 <label className="block text-[11px] font-bold text-gray-600 uppercase tracking-wider mb-1">
-                  Enlace de WhatsApp o Recurso Oficial
+                  Enlace, Archivo o Imagen del Recurso
                 </label>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <label
+                    htmlFor="lesson-file-upload"
+                    className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-300 cursor-pointer"
+                  >
+                    <Upload className="w-3.5 h-3.5 text-gray-600" />
+                    <span>📁 Subir imagen para la lección</span>
+                  </label>
+                  <input
+                    id="lesson-file-upload"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const reader = new FileReader();
+                      reader.onload = (ev) => {
+                        const img = new Image();
+                        img.onload = () => {
+                          const canvas = document.createElement('canvas');
+                          let w = img.width;
+                          let h = img.height;
+                          if (w > 1200) { h = Math.round(h * (1200 / w)); w = 1200; }
+                          canvas.width = w; canvas.height = h;
+                          const ctx = canvas.getContext('2d');
+                          if (ctx) {
+                            ctx.drawImage(img, 0, 0, w, h);
+                            setFormLessonFile(canvas.toDataURL('image/webp', 0.82));
+                          }
+                        };
+                        img.src = ev.target?.result as string;
+                      };
+                      reader.readAsDataURL(file);
+                    }}
+                    className="hidden"
+                  />
+                  <span className="text-[10px] text-gray-400">o pega el enlace abajo</span>
+                </div>
                 <input
                   type="text"
                   value={formLessonFile}
                   onChange={(e) => setFormLessonFile(e.target.value)}
-                  placeholder="https://chat.whatsapp.com/Bil2j98uXsp0SeL9LgqfUO"
+                  placeholder="https://chat.whatsapp.com/... o https://..."
                   className="w-full px-3 py-2 rounded-xl bg-blue-50/50 border border-blue-200 text-sm text-blue-600 font-mono outline-none"
                 />
+                {formLessonFile && formLessonFile.startsWith('data:image/') && (
+                  <div className="mt-2 max-h-32 rounded-lg overflow-hidden border border-slate-200">
+                    <img src={formLessonFile} alt="Vista previa lección" className="w-full h-32 object-cover" />
+                  </div>
+                )}
               </div>
 
               <div>

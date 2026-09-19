@@ -157,6 +157,18 @@ export const LessonContent: React.FC<LessonContentProps> = ({
           </div>
         )}
 
+        {/* Render image attachment directly if available */}
+        {((recurso.archivo_url && (recurso.archivo_url.startsWith('data:image/') || /\.(jpg|jpeg|png|webp|gif)($|\?)/i.test(recurso.archivo_url))) ||
+          (recurso.enlace_url && (recurso.enlace_url.startsWith('data:image/') || /\.(jpg|jpeg|png|webp|gif)($|\?)/i.test(recurso.enlace_url)))) && (
+          <div className="mt-6 rounded-2xl overflow-hidden border border-gray-200 bg-gray-50 shadow-xs">
+            <img
+              src={recurso.archivo_url?.startsWith('data:image/') ? recurso.archivo_url : recurso.enlace_url}
+              alt={recurso.titulo}
+              className="w-full max-h-[500px] object-contain mx-auto"
+            />
+          </div>
+        )}
+
         {/* Downloadable / Link Resources Box */}
         {(recurso.archivo_url || recurso.enlace_url) && (
           <div className="mt-8 p-5 bg-amber-50/60 rounded-xl border border-amber-200/80">

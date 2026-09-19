@@ -20,7 +20,7 @@ export default function ClassroomPage() {
   const [isUnlockModalOpen, setIsUnlockModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Load unlock and completed status from localStorage
+  // Load unlock, completed status and cached modules from localStorage
   useEffect(() => {
     try {
       const unlocked = localStorage.getItem('skool_lead_unlocked') === 'true';
@@ -30,24 +30,42 @@ export default function ClassroomPage() {
       if (savedCompleted) {
         setCompletedLessons(JSON.parse(savedCompleted));
       }
+
+      // Preload latest saved modules immediately (eliminates flash of old demo data)
+      const cachedModulos = localStorage.getItem('boveda_modulos_cache');
+      if (cachedModulos) {
+        const parsed = JSON.parse(cachedModulos);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setModulos(parsed);
+          setLoading(false);
+        }
+      }
+
+      const cachedConfig = localStorage.getItem('boveda_config_cache');
+      if (cachedConfig) {
+        setConfig(JSON.parse(cachedConfig));
+      }
     } catch (e) {
       // Storage error fallback
     }
   }, []);
 
-  // Fetch dynamic content and config from API
+  // Fetch dynamic content and config from API (always fresh with no-store)
   useEffect(() => {
     async function loadData() {
       try {
         const [contentRes, configRes] = await Promise.all([
-          fetch('/api/content'),
-          fetch('/api/config')
+          fetch('/api/content', { cache: 'no-store' }),
+          fetch('/api/config', { cache: 'no-store' })
         ]);
 
         if (contentRes.ok) {
           const contentData = await contentRes.json();
           if (contentData.success && contentData.modulos && contentData.modulos.length > 0) {
             setModulos(contentData.modulos);
+            try {
+              localStorage.setItem('boveda_modulos_cache', JSON.stringify(contentData.modulos));
+            } catch (e) {}
           }
         }
 
@@ -55,6 +73,9 @@ export default function ClassroomPage() {
           const configData = await configRes.json();
           if (configData.success && configData.config) {
             setConfig(configData.config);
+            try {
+              localStorage.setItem('boveda_config_cache', JSON.stringify(configData.config));
+            } catch (e) {}
           }
         }
       } catch (err) {
