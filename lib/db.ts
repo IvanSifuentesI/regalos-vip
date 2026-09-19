@@ -114,62 +114,22 @@ export async function addLeadsBulk(leadsToAdd: Omit<Lead, 'id' | 'created_at'>[]
   return { count: formattedLeads.length };
 }
 
-// --- HELPER DE PERSISTENCIA EN SUPABASE (1 SOLA TABLA: boveda_modulos) ---
-async function persistContentToSupabase() {
-  const client = supabaseAdmin || supabase;
-  if (!client) return;
-  try {
-    await client.from('boveda_modulos').upsert({
-      id: 'current',
-      modulos: memoryModulos,
-      config: memoryConfig,
-      updated_at: new Date().toISOString()
-    });
-  } catch (err) {
-    // Si la tabla aún no existe en Supabase, no romper la app
-    console.warn('Nota: boveda_modulos no disponible en Supabase, usando memoria local', err);
-  }
-}
+// Función sin efecto: el contenido de módulos se gestiona en código (lib/demoData.ts)
+// dejando Supabase exclusivamente para la captura de leads (prospectos).
+async function persistContentToSupabase() {}
 
 // --- CONFIG ---
 export async function getConfig(): Promise<ClassroomConfig> {
-  const client = supabaseAdmin || supabase;
-  if (client) {
-    try {
-      const { data, error } = await client
-        .from('boveda_modulos')
-        .select('config')
-        .eq('id', 'current')
-        .maybeSingle();
-      if (!error && data?.config) {
-        memoryConfig = { ...memoryConfig, ...data.config };
-      }
-    } catch (e) {}
-  }
   return memoryConfig;
 }
 
 export async function updateConfig(updates: Partial<ClassroomConfig>): Promise<ClassroomConfig> {
   memoryConfig = { ...memoryConfig, ...updates, updated_at: new Date().toISOString() };
-  await persistContentToSupabase();
   return memoryConfig;
 }
 
 // --- MODULOS & RECURSOS ---
 export async function getContent(): Promise<Modulo[]> {
-  const client = supabaseAdmin || supabase;
-  if (client) {
-    try {
-      const { data, error } = await client
-        .from('boveda_modulos')
-        .select('modulos')
-        .eq('id', 'current')
-        .maybeSingle();
-      if (!error && data?.modulos && Array.isArray(data.modulos) && data.modulos.length > 0) {
-        memoryModulos = data.modulos;
-      }
-    } catch (e) {}
-  }
   return memoryModulos;
 }
 
