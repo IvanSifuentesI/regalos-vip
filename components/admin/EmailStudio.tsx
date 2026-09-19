@@ -701,11 +701,38 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
                   )}
                 </div>
               ) : (
-                <div className="text-xs text-red-800 space-y-2 pl-7">
-                  <p>{diagnosis.error}</p>
-                  <p className="text-[11px] text-red-700">
-                    💡 <strong>Solución:</strong> Asegúrate de copiar la clave completa desde Brevo (debe empezar con <code className="font-mono">xkeysib-</code>) y no confundirla con la contraseña de tu cuenta.
-                  </p>
+                <div className="text-xs text-red-800 space-y-3 pl-7">
+                  <p className="font-semibold text-red-950">{diagnosis.error}</p>
+                  
+                  {diagnosis.error?.toLowerCase().includes('ip') || diagnosis.error?.toLowerCase().includes('authorised_ips') ? (
+                    <div className="p-4 bg-amber-50 border border-amber-300 rounded-xl space-y-2 text-amber-950">
+                      <div className="flex items-center gap-2 font-bold text-amber-900">
+                        <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                        <span>🚨 Causa detectada: Restricción de IP activada en Brevo</span>
+                      </div>
+                      <p className="text-[12px] leading-relaxed text-amber-900">
+                        Tu aplicación está alojada en <strong>Vercel (servidores en la nube)</strong>, cuyas direcciones IP son dinámicas y cambian en cada ejecución. Brevo bloquea cualquier petición si tienes la opción de &quot;IPs autorizadas&quot; activada.
+                      </p>
+                      <div className="pt-2">
+                        <a
+                          href="https://app.brevo.com/security/authorised_ips"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg font-black text-xs text-white bg-amber-600 hover:bg-amber-700 shadow-xs transition-colors"
+                        >
+                          <span>👉 Desactivar Restricción de IP en Brevo</span>
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+                      </div>
+                      <p className="text-[11px] text-amber-800 italic">
+                        Instrucciones: En esa página de Brevo, simplemente <strong>desactiva el interruptor</strong> o elimina las IPs listadas para permitir envíos desde tu página web.
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-[11px] text-red-700">
+                      💡 <strong>Solución:</strong> Asegúrate de copiar la clave completa desde Brevo (debe empezar con <code className="font-mono">xkeysib-</code>) y no confundirla con la contraseña de tu cuenta.
+                    </p>
+                  )}
                 </div>
               )}
             </div>
