@@ -16,23 +16,23 @@ export const DEFAULT_CONFIG: ClassroomConfig = {
 export const INITIAL_MODULOS: Modulo[] = [
   {
     id: "mod-1",
-    titulo: "👉🏻 | Empieza Aquí",
-    descripcion: "Todo lo que necesitas saber para lograr tu objetivo en la comunidad.",
+    titulo: "👉🏻 | Fábrica de Imágenes IA",
+    descripcion: "Genera masivamente imágenes gratis",
     orden: 1,
-    etiqueta_superior: "EMPIEZA AQUI",
+    etiqueta_superior: "FÁBRICA DE IMÁGENES IA",
     color_etiqueta: "#FDE047",
-    bloqueado: false, // Acceso libre inicial (Efecto Atajo / Prueba LMT)
-    portada_url: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80",
+    bloqueado: false, // Acceso libre inicial
+    portada_url: "/uploads/modulo1_fabrica_portada.jpg",
     publicado: true,
     created_at: "2026-09-17T08:00:00Z",
     recursos: [
       {
         id: "rec-1-1",
         modulo_id: "mod-1",
-        titulo: "(Borrador) Grupo de Whatsapp VIP",
-        descripcion: "Únete a nuestro grupo oficial de WhatsApp para recibir actualizaciones inmediatas, soporte y networking con otros creadores.",
+        titulo: "Fábrica de Imágenes IA",
+        descripcion: "Solo necesitas abrir el link de ARRIBA\n\nPuedes definir:\n\n👤 Personaje\n🎨 Estilo\n🌎 Ambiente\n📝 100 prompts\n⚡ Generación masiva",
         tipo: "enlace",
-        enlace_url: "https://chat.whatsapp.com/LpfNzr7ZWh8KXyWvlBklQl",
+        enlace_url: "https://share.gemini.google/Yp17PI6xbuv7",
         orden: 1,
         publicado: true,
         created_at: "2026-09-17T08:00:00Z",
@@ -40,22 +40,12 @@ export const INITIAL_MODULOS: Modulo[] = [
       {
         id: "rec-1-2",
         modulo_id: "mod-1",
-        titulo: "GANA DINERO CON SKOOL",
-        descripcion: "Estrategias fundamentales para monetizar tu propia comunidad en Skool y crear flujos de ingresos recurrentes.",
-        tipo: "video",
-        video_url: "https://www.youtube.com/watch?v=LXb3EKWsInQ",
-        duracion: "12:30",
+        titulo: "Prompt - Personaje",
+        descripcion: "Pega este prompt junto con la imagen de referencia en CHATGPT\n\nSuperprompt:\nUsing the reference photographs as the exact source for identity, create a photorealistic character sheet in a 16:9 landscape format against a uniform light-gray background. Maintain the subject's facial features, proportions, skin tone, hair, and apparent age exactly as they are. Include full-body views—standing and facing the camera, three-quarter view, and profile—as well as close-ups and extreme close-ups showing both a neutral expression and a smile with teeth visible in a natural way. Use soft studio lighting, neutral clothing, and a clean layout free of text, frames, or decorative elements.\n\n\nComo resultado tendrás todos los ángulos de tu personaje",
+        tipo: "enlace",
+        archivo_url: "/uploads/leccion2_prompt_personaje.png",
+        enlace_url: "/uploads/leccion2_prompt_personaje.png",
         orden: 2,
-        publicado: true,
-        created_at: "2026-09-17T08:00:00Z",
-      },
-      {
-        id: "rec-1-3",
-        modulo_id: "mod-1",
-        titulo: "Cómo subir de nivel",
-        descripcion: "El sistema de puntos, niveles y desbloqueos para sacar el máximo provecho de todas las herramientas gratuitas.",
-        tipo: "texto",
-        orden: 3,
         publicado: true,
         created_at: "2026-09-17T08:00:00Z",
       }
@@ -70,7 +60,7 @@ export const INITIAL_MODULOS: Modulo[] = [
     color_etiqueta: "#FDE047",
     bloqueado: true,
     portada_url: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=600&q=80",
-    publicado: true,
+    publicado: false, // Borrador (solo admin)
     created_at: "2026-09-17T08:00:00Z",
     recursos: [
       {
@@ -109,7 +99,7 @@ export const INITIAL_MODULOS: Modulo[] = [
     color_etiqueta: "#FDE047",
     bloqueado: true,
     portada_url: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=600&q=80",
-    publicado: true,
+    publicado: false, // Borrador (solo visible para admin)
     created_at: "2026-09-17T08:00:00Z",
     recursos: [
       {
@@ -147,7 +137,7 @@ export const INITIAL_MODULOS: Modulo[] = [
     color_etiqueta: "#FDE047",
     bloqueado: true,
     portada_url: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=600&q=80",
-    publicado: true,
+    publicado: false, // Borrador (solo visible para admin)
     created_at: "2026-09-17T08:00:00Z",
     recursos: [
       {
@@ -184,7 +174,7 @@ export const INITIAL_MODULOS: Modulo[] = [
     color_etiqueta: "#FDE047",
     bloqueado: true,
     portada_url: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=80",
-    publicado: true,
+    publicado: false, // Borrador (solo visible para admin)
     created_at: "2026-09-17T08:00:00Z",
     recursos: [
       {
@@ -222,7 +212,7 @@ export const INITIAL_MODULOS: Modulo[] = [
     color_etiqueta: "#FDE047",
     bloqueado: true,
     portada_url: "https://images.unsplash.com/photo-1535223289827-42f1e9919769?auto=format&fit=crop&w=600&q=80",
-    publicado: true,
+    publicado: false, // Borrador (solo visible para admin)
     created_at: "2026-09-17T08:00:00Z",
     recursos: [
       {

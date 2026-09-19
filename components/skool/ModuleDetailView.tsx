@@ -257,17 +257,24 @@ export const ModuleDetailView: React.FC<ModuleDetailViewProps> = ({
               {activeLesson.archivo_url && (
                 <div className="p-4 bg-amber-50/60 rounded-xl border border-amber-200/80 flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-[11px] font-bold text-amber-950 uppercase tracking-wider">Material de Descarga</p>
-                    <p className="text-xs text-gray-600 mt-0.5">Plantilla, base de datos o documento complementario.</p>
+                    <p className="text-[11px] font-bold text-amber-950 uppercase tracking-wider">
+                      {/\.(jpg|jpeg|png|webp|gif|svg)($|\?)/i.test(activeLesson.archivo_url) ? 'Imagen Adjunta' : 'Material de Descarga'}
+                    </p>
+                    <p className="text-xs text-gray-600 mt-0.5">
+                      {/\.(jpg|jpeg|png|webp|gif|svg)($|\?)/i.test(activeLesson.archivo_url)
+                        ? 'Imagen de referencia para adjuntar en ChatGPT junto con el prompt.'
+                        : 'Plantilla, base de datos o documento complementario.'}
+                    </p>
                   </div>
                   <a
                     href={activeLesson.archivo_url}
+                    download
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-600 text-black shadow-xs whitespace-nowrap"
                   >
                     <Download className="w-3.5 h-3.5" />
-                    <span>Descargar Archivo</span>
+                    <span>{/\.(jpg|jpeg|png|webp|gif|svg)($|\?)/i.test(activeLesson.archivo_url) ? 'Descargar Imagen' : 'Descargar Archivo'}</span>
                   </a>
                 </div>
               )}
@@ -276,6 +283,22 @@ export const ModuleDetailView: React.FC<ModuleDetailViewProps> = ({
               {activeLesson.descripcion && (
                 <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-line pt-2">
                   {activeLesson.descripcion}
+                </div>
+              )}
+
+              {/* Render image preview directly in lesson */}
+              {((activeLesson.archivo_url && (activeLesson.archivo_url.startsWith('data:image/') || /\.(jpg|jpeg|png|webp|gif|svg)($|\?)/i.test(activeLesson.archivo_url))) ||
+                (activeLesson.enlace_url && (activeLesson.enlace_url.startsWith('data:image/') || /\.(jpg|jpeg|png|webp|gif|svg)($|\?)/i.test(activeLesson.enlace_url)))) && (
+                <div className="mt-4 rounded-2xl overflow-hidden border border-gray-200 bg-gray-50 shadow-xs">
+                  <img
+                    src={
+                      activeLesson.archivo_url && (activeLesson.archivo_url.startsWith('data:image/') || /\.(jpg|jpeg|png|webp|gif|svg)($|\?)/i.test(activeLesson.archivo_url))
+                        ? activeLesson.archivo_url
+                        : activeLesson.enlace_url
+                    }
+                    alt={activeLesson.titulo}
+                    className="w-full max-h-[550px] object-contain mx-auto"
+                  />
                 </div>
               )}
 
