@@ -59,6 +59,7 @@ export default function AdminDashboardPage() {
   const [formModCover, setFormModCover] = useState('');
   const [formModBanner, setFormModBanner] = useState('');
   const [formModLocked, setFormModLocked] = useState(true);
+  const [formModDraft, setFormModDraft] = useState(false);
   const [formNotifyEmail, setFormNotifyEmail] = useState(false);
   const [isUploadingCover, setIsUploadingCover] = useState(false);
 
@@ -233,6 +234,7 @@ export default function AdminDashboardPage() {
       setFormModCover(mod.portada_url || '');
       setFormModBanner(mod.etiqueta_superior || '');
       setFormModLocked(mod.bloqueado ?? true);
+      setFormModDraft(mod.publicado === false);
       setFormNotifyEmail(false);
     } else {
       setEditingModule(null);
@@ -241,9 +243,43 @@ export default function AdminDashboardPage() {
       setFormModCover('');
       setFormModBanner('NUEVO MÓDULO');
       setFormModLocked(true);
+      setFormModDraft(false);
       setFormNotifyEmail(false);
     }
     setModuleModalOpen(true);
+  };
+
+  // --- TOGGLE PUBLISH (BORRADOR / PUBLICO) FOR INDIVIDUAL MODULE ---
+  const handleToggleModulePublish = async (module: Modulo, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    const newPublicado = !(module.publicado ?? true);
+
+    // Optimistic instant UI update
+    setModulos(prev => prev.map(m => m.id === module.id ? { ...m, publicado: newPublicado } : m));
+    if (activeModuleForLessons?.id === module.id) {
+      setActiveModuleForLessons(prev => prev ? { ...prev, publicado: newPublicado } : null);
+    }
+
+    try {
+      const res = await fetch('/api/content', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'save_module',
+          moduleData: {
+            ...module,
+            publicado: newPublicado,
+          },
+        }),
+      });
+      if (!res.ok) {
+        alert('Error al cambiar estado de publicación');
+        refreshData();
+      }
+    } catch (err) {
+      alert('Error de conexión');
+      refreshData();
+    }
   };
 
   // --- SAVE MODULE ---
@@ -260,9 +296,31 @@ export default function AdminDashboardPage() {
         etiqueta_superior: formModBanner.trim(),
         bloqueado: formModLocked,
         orden: editingModule ? editingModule.orden : modulos.length + 1,
-        publicado: true,
+        publicado: !formModDraft,
       };
 
+      // 1. Optimistic Instant UI Update (0ms delay)
+      if (editingModule) {
+        setModulos(prev => prev.map(m => m.id === editingModule.id ? { ...m, ...payload } : m));
+      } else {
+        const tempMod: Modulo = {
+          id: `mod-${Date.now()}`,
+          titulo: payload.titulo!,
+          descripcion: payload.descripcion || '',
+          portada_url: payload.portada_url || '',
+          etiqueta_superior: payload.etiqueta_superior || '',
+          bloqueado: payload.bloqueado ?? true,
+          publicado: payload.publicado ?? true,
+          orden: payload.orden || modulos.length + 1,
+          created_at: new Date().toISOString(),
+          recursos: [],
+        };
+        setModulos(prev => [...prev, tempMod]);
+      }
+
+      setModuleModalOpen(false);
+
+      // 2. Persist to API / Supabase
       const res = await fetch('/api/content', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -286,11 +344,14 @@ export default function AdminDashboardPage() {
           }).catch(console.warn);
         }
 
-        setModuleModalOpen(false);
+        refreshData();
+      } else {
+        alert('Error al guardar en el servidor. Revisa tu conexión.');
         refreshData();
       }
     } catch (err) {
       alert('Error al guardar módulo');
+      refreshData();
     }
   };
 
@@ -749,6 +810,27 @@ export default function AdminDashboardPage() {
                                 {modulo.titulo}
                               </div>
                             )}
+
+                            {/* Public / Draft Badge Switch (Requested Feature) */}
+                            <button
+                              onClick={(e) => handleToggleModulePublish(modulo, e)}
+                              className={`absolute top-2.5 left-2.5 px-2.5 py-1 rounded-lg text-[11px] font-extrabold flex items-center gap-1 shadow-xs z-10 transition-all ${
+                                modulo.publicado === false
+                                  ? 'bg-amber-400 text-slate-950 hover:bg-amber-500 ring-2 ring-amber-300/80'
+                                  : 'bg-black/70 backdrop-blur-xs text-emerald-300 hover:bg-black/90'
+                              }`}
+                              title="Haz clic para alternar: Público o Borrador (Oculto)"
+                            >
+                              {modulo.publicado === false ? (
+                                <>
+                                  <span>🟡 Borrador</span>
+                                </>
+                              ) : (
+                                <>
+                                  <span>🟢 Público</span>
+                                </>
+                              )}
+                            </button>
 
                             {/* Lock / Unlock Switch badge */}
                             <button
@@ -1519,6 +1601,29 @@ export default function AdminDashboardPage() {
                     <ToggleRight className="w-8 h-8 text-amber-500" />
                   ) : (
                     <ToggleLeft className="w-8 h-8 text-gray-400" />
+                  )}
+                </button>
+              </div>
+
+              {/* Draft / Visibility Switch (Requested Feature) */}
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-200">
+                <div>
+                  <p className="text-xs font-bold text-gray-800">
+                    {formModDraft ? '🟡 Modo Borrador (Oculto al público)' : '🟢 Publicado (Visible en la Bóveda)'}
+                  </p>
+                  <p className="text-[10px] text-gray-500">
+                    {formModDraft ? 'Los visitantes NO podrán ver este módulo en la web.' : 'Visible normalmente en la portada pública.'}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setFormModDraft(!formModDraft)}
+                  className="cursor-pointer"
+                >
+                  {formModDraft ? (
+                    <ToggleLeft className="w-8 h-8 text-amber-500" />
+                  ) : (
+                    <ToggleRight className="w-8 h-8 text-emerald-500" />
                   )}
                 </button>
               </div>

@@ -158,15 +158,17 @@ export default function ClassroomPage() {
 
             {/* Cards Grid: 1-col on mobile, 2-col on tablet, 3-col on desktop */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-6">
-              {modulos.map((modulo) => (
-                <ModuleGridCard
-                  key={modulo.id}
-                  modulo={modulo}
-                  completedLessons={completedLessons}
-                  isUnlocked={isUnlocked}
-                  onClick={() => handleModuleClick(modulo)}
-                />
-              ))}
+              {modulos
+                .filter((modulo) => modulo.publicado !== false)
+                .map((modulo) => (
+                  <ModuleGridCard
+                    key={modulo.id}
+                    modulo={modulo}
+                    completedLessons={completedLessons}
+                    isUnlocked={isUnlocked}
+                    onClick={() => handleModuleClick(modulo)}
+                  />
+                ))}
 
               {/* Strategic VIP Mentorship Card (High Ticket Conversion Trigger) */}
               <VIPMentoriaCard

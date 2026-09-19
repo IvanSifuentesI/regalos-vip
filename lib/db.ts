@@ -114,92 +114,188 @@ export async function addLeadsBulk(leadsToAdd: Omit<Lead, 'id' | 'created_at'>[]
   return { count: formattedLeads.length };
 }
 
-// --- CONFIG (LOCAL EN LA APP, NO TOCA SUPABASE) ---
+// --- HELPER DE PERSISTENCIA EN SUPABASE (1 SOLA TABLA: boveda_modulos) ---
+async function persistContentToSupabase() {
+  const client = supabaseAdmin || supabase;
+  if (!client) return;
+  try {
+    await client.from('boveda_modulos').upsert({
+      id: 'current',
+      modulos: memoryModulos,
+      config: memoryConfig,
+      updated_at: new Date().toISOString()
+    });
+  } catch (err) {
+    // Si la tabla aún no existe en Supabase, no romper la app
+    console.warn('Nota: boveda_modulos no disponible en Supabase, usando memoria local', err);
+  }
+}
+
+// --- CONFIG ---
 export async function getConfig(): Promise<ClassroomConfig> {
+  const client = supabaseAdmin || supabase;
+  if (client) {
+    try {
+      const { data, error } = await client
+        .from('boveda_modulos')
+        .select('config')
+        .eq('id', 'current')
+        .maybeSingle();
+      if (!error && data?.config) {
+        memoryConfig = { ...memoryConfig, ...data.config };
+      }
+    } catch (e) {}
+  }
   return memoryConfig;
 }
 
 export async function updateConfig(updates: Partial<ClassroomConfig>): Promise<ClassroomConfig> {
   memoryConfig = { ...memoryConfig, ...updates, updated_at: new Date().toISOString() };
+  await persistContentToSupabase();
   return memoryConfig;
 }
 
-// --- MODULOS & RECURSOS (LOCALES EN LA APP, NO TOCAN SUPABASE) ---
+// --- MODULOS & RECURSOS ---
 export async function getContent(): Promise<Modulo[]> {
+  const client = supabaseAdmin || supabase;
+  if (client) {
+    try {
+      const { data, error } = await client
+        .from('boveda_modulos')
+        .select('modulos')
+        .eq('id', 'current')
+        .maybeSingle();
+      if (!error && data?.modulos && Array.isArray(data.modulos) && data.modulos.length > 0) {
+        memoryModulos = data.modulos;
+      }
+    } catch (e) {}
+  }
   return memoryModulos;
 }
 
 export async function saveModule(moduleData: Partial<Modulo>): Promise<Modulo> {
+  // Asegurar que tenemos la última versión de los módulos
+  await getContent();
+
+  let savedMod: Modulo;
   if (moduleData.id) {
     const idx = memoryModulos.findIndex((m) => m.id === moduleData.id);
     if (idx >= 0) {
-      memoryModulos[idx] = { ...memoryModulos[idx], ...moduleData } as Modulo;
-      return memoryModulos[idx];
+      memoryModulos[idx] = { 
+        ...memoryModulos[idx], 
+        ...moduleData,
+        // Si no se especifica recursos, preservar los existentes
+        recursos: moduleData.recursos !== undefined ? moduleData.recursos : memoryModulos[idx].recursos || []
+      } as Modulo;
+      savedMod = memoryModulos[idx];
+    } else {
+      savedMod = {
+        id: moduleData.id,
+        titulo: moduleData.titulo || 'Nuevo Módulo',
+        descripcion: moduleData.descripcion || '',
+        orden: moduleData.orden || memoryModulos.length + 1,
+        portada_url: moduleData.portada_url || '',
+        etiqueta_superior: moduleData.etiqueta_superior || 'NUEVO MÓDULO',
+        color_etiqueta: moduleData.color_etiqueta || '#FDE047',
+        bloqueado: moduleData.bloqueado ?? true,
+        publicado: moduleData.publicado ?? true,
+        created_at: new Date().toISOString(),
+        recursos: moduleData.recursos || [],
+      };
+      memoryModulos.push(savedMod);
     }
+  } else {
+    savedMod = {
+      id: `mod-${Date.now()}`,
+      titulo: moduleData.titulo || 'Nuevo Módulo',
+      descripcion: moduleData.descripcion || '',
+      orden: moduleData.orden || memoryModulos.length + 1,
+      portada_url: moduleData.portada_url || '',
+      etiqueta_superior: moduleData.etiqueta_superior || 'NUEVO MÓDULO',
+      color_etiqueta: moduleData.color_etiqueta || '#FDE047',
+      bloqueado: moduleData.bloqueado ?? true,
+      publicado: moduleData.publicado ?? true,
+      created_at: new Date().toISOString(),
+      recursos: [],
+    };
+    memoryModulos.push(savedMod);
   }
-  const newMod: Modulo = {
-    id: `mod-${Date.now()}`,
-    titulo: moduleData.titulo || 'Nuevo Módulo',
-    descripcion: moduleData.descripcion || '',
-    orden: moduleData.orden || memoryModulos.length + 1,
-    portada_url: moduleData.portada_url || '',
-    etiqueta_superior: moduleData.etiqueta_superior || 'NUEVO MÓDULO',
-    color_etiqueta: moduleData.color_etiqueta || '#FDE047',
-    bloqueado: moduleData.bloqueado ?? true,
-    publicado: moduleData.publicado ?? true,
-    created_at: new Date().toISOString(),
-    recursos: [],
-  };
-  memoryModulos.push(newMod);
-  return newMod;
+
+  await persistContentToSupabase();
+  return savedMod;
 }
 
 export async function bulkSetLockStatus(locked: boolean): Promise<Modulo[]> {
+  await getContent();
   memoryModulos = memoryModulos.map(m => ({ ...m, bloqueado: locked }));
+  await persistContentToSupabase();
   return memoryModulos;
 }
 
 export async function deleteModule(moduleId: string): Promise<boolean> {
+  await getContent();
   memoryModulos = memoryModulos.filter((m) => m.id !== moduleId);
+  await persistContentToSupabase();
   return true;
 }
 
 export async function saveRecurso(recursoData: Partial<Recurso>): Promise<Recurso> {
+  await getContent();
   const mod = memoryModulos.find((m) => m.id === recursoData.modulo_id);
   if (!mod) throw new Error('Módulo no encontrado');
   if (!mod.recursos) mod.recursos = [];
 
+  let savedRec: Recurso;
   if (recursoData.id) {
     const idx = mod.recursos.findIndex((r) => r.id === recursoData.id);
     if (idx >= 0) {
       mod.recursos[idx] = { ...mod.recursos[idx], ...recursoData } as Recurso;
-      return mod.recursos[idx];
+      savedRec = mod.recursos[idx];
+    } else {
+      savedRec = {
+        id: recursoData.id,
+        modulo_id: recursoData.modulo_id!,
+        titulo: recursoData.titulo || 'Nueva Lección',
+        descripcion: recursoData.descripcion || '',
+        tipo: recursoData.tipo || 'video',
+        video_url: recursoData.video_url,
+        archivo_url: recursoData.archivo_url,
+        enlace_url: recursoData.enlace_url,
+        duracion: recursoData.duracion || '',
+        orden: recursoData.orden || mod.recursos.length + 1,
+        publicado: recursoData.publicado ?? true,
+        created_at: new Date().toISOString(),
+      };
+      mod.recursos.push(savedRec);
     }
+  } else {
+    savedRec = {
+      id: `rec-${Date.now()}`,
+      modulo_id: recursoData.modulo_id!,
+      titulo: recursoData.titulo || 'Nueva Lección',
+      descripcion: recursoData.descripcion || '',
+      tipo: recursoData.tipo || 'video',
+      video_url: recursoData.video_url,
+      archivo_url: recursoData.archivo_url,
+      enlace_url: recursoData.enlace_url,
+      duracion: recursoData.duracion || '',
+      orden: recursoData.orden || mod.recursos.length + 1,
+      publicado: recursoData.publicado ?? true,
+      created_at: new Date().toISOString(),
+    };
+    mod.recursos.push(savedRec);
   }
 
-  const newRec: Recurso = {
-    id: `rec-${Date.now()}`,
-    modulo_id: recursoData.modulo_id!,
-    titulo: recursoData.titulo || 'Nueva Lección',
-    descripcion: recursoData.descripcion || '',
-    tipo: recursoData.tipo || 'video',
-    video_url: recursoData.video_url,
-    archivo_url: recursoData.archivo_url,
-    enlace_url: recursoData.enlace_url,
-    duracion: recursoData.duracion || '',
-    orden: recursoData.orden || mod.recursos.length + 1,
-    publicado: recursoData.publicado ?? true,
-    created_at: new Date().toISOString(),
-  };
-
-  mod.recursos.push(newRec);
-  return newRec;
+  await persistContentToSupabase();
+  return savedRec;
 }
 
 export async function deleteRecurso(moduloId: string, recursoId: string): Promise<boolean> {
+  await getContent();
   const mod = memoryModulos.find((m) => m.id === moduloId);
   if (mod && mod.recursos) {
     mod.recursos = mod.recursos.filter((r) => r.id !== recursoId);
+    await persistContentToSupabase();
   }
   return true;
 }
