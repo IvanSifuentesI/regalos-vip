@@ -32,7 +32,7 @@ export const INITIAL_MODULOS: Modulo[] = [
         titulo: "Fábrica de Imágenes IA",
         descripcion: "Solo necesitas abrir el link de ARRIBA\n\nPuedes definir:\n\n👤 Personaje\n🎨 Estilo\n🌎 Ambiente\n📝 100 prompts\n⚡ Generación masiva",
         tipo: "enlace",
-        enlace_url: "https://share.gemini.google/Yp17Pl6xbuv7",
+        enlace_url: "https://share.gemini.google/bFoq9BOEHzPn",
         orden: 1,
         publicado: true,
         created_at: "2026-09-17T08:00:00Z",
