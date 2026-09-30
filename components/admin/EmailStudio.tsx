@@ -44,8 +44,8 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
   
   // API credentials state
   const [apiKey, setApiKey] = useState(config.brevo_api_key || '');
-  const [senderEmail, setSenderEmail] = useState(config.email_remitente || '');
-  const [senderName, setSenderName] = useState(config.nombre_classroom || 'REGALOS EXCLUSIVOS');
+  const [senderEmail, setSenderEmail] = useState(config.email_remitente || 'ivansifuentes340@gmail.com');
+  const [senderName, setSenderName] = useState('Iván Sifuentes');
   const [copiedVar, setCopiedVar] = useState<string | null>(null);
   
   // Diagnosis state
@@ -53,17 +53,17 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
   const [diagnosis, setDiagnosis] = useState<DiagnosisResult | null>(null);
   
   // Live test send state
-  const [testEmailTo, setTestEmailTo] = useState(leads[0]?.email || '');
+  const [testEmailTo, setTestEmailTo] = useState(leads[0]?.email || 'juan98yup@gmail.com');
   const [isSendingTest, setIsSendingTest] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
 
   // Email Composer state (FÓRMULA 100K Conversational Style)
-  const [emailSubject, setEmailSubject] = useState('tu acceso a los recursos de IA');
+  const [emailSubject, setEmailSubject] = useState('bienvenido a los recursos de IA de Iván Sifuentes');
   const [emailBody, setEmailBody] = useState(
-    'Hola {{nombre}},\n\nTe escribo para confirmarte que ya tienes disponible el acceso a las plantillas y los prompts de IA en la Bóveda.\n\nEn la segunda lección agregué el Superprompt completo para crear todos los ángulos y planos de tu personaje en ChatGPT con fondo limpio.\n\nPega el prompt tal cual junto con la foto de referencia para que te dé las tomas de frente, perfil y 3/4 con el mismo rostro.\n\nPuedes entrar directamente desde este enlace:\n\nSi tienes alguna pregunta mientras los pruebas, me puedes responder a este correo o escribir a nuestro WhatsApp.'
+    'Hola {{nombre}}, te saluda Iván Sifuentes.\n\nTe doy la bienvenida a mi Bóveda de Recursos de IA.\n\nYa tienes disponible tu acceso completo a las herramientas gratuitas, la Fábrica de Imágenes y los Superprompts para crear tus personajes consistentes sin complicaciones.\n\nDisfruta este contenido y ponlo en práctica desde hoy para ahorrar horas de trabajo y crear contenido de alto impacto.\n\nAhora, si tu objetivo es ir un paso más allá y buscas dominar herramientas avanzadas de IA, automatizaciones profesionales y los flujos exactos que utilizo para generar ingresos y escalar contenido, preparé un espacio exclusivo para ti:\n\nNuestra comunidad privada en Skool.\n\nAllí no solo descargas plantillas: tienes acompañamiento directo, actualizaciones constantes y el sistema paso a paso para monetizar tus habilidades con inteligencia artificial.'
   );
-  const [ctaButtonText, setCtaButtonText] = useState('Entrar a la Bóveda de Recursos');
-  const [ctaButtonUrl, setCtaButtonUrl] = useState(config.cta_oferta_url || config.whatsapp_comunidad_url || 'https://chat.whatsapp.com/LpfNzr7ZWh8KXyWvlBklQl');
+  const [ctaButtonText, setCtaButtonText] = useState('Entrar a la Comunidad Premium en Skool');
+  const [ctaButtonUrl, setCtaButtonUrl] = useState(config.cta_oferta_url || 'https://www.skool.com/ia-automatiza-7412/about');
   
   // Broadcast sending state
   const [isBroadcasting, setIsBroadcasting] = useState(false);

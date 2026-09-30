@@ -21,7 +21,7 @@ export function extractCleanEmail(input?: string): string {
 }
 
 // Helper to extract sender name
-export function extractSenderName(input?: string, fallback: string = 'REGALOS EXCLUSIVOS'): string {
+export function extractSenderName(input?: string, fallback: string = 'Iván Sifuentes'): string {
   if (!input) return fallback;
   if (input.includes('<')) {
     const name = input.split('<')[0].trim();
@@ -347,7 +347,7 @@ export function buildBrandedEmailHtml({
     <!-- FIRMA PERSONAL HUMANA -->
     <div style="margin-top: 32px; padding-top: 20px; border-top: 1px solid #f3f4f6;">
       <p style="margin: 0; font-size: 15px; font-weight: 700; color: #111827;">${brandName}</p>
-      <p style="margin: 4px 0 0 0; font-size: 12px; color: #6b7280;">Bóveda de Recursos & Automatizaciones IA</p>
+      <p style="margin: 4px 0 0 0; font-size: 12px; color: #6b7280;">Automatizaciones & Contenido con Inteligencia Artificial</p>
     </div>
 
     <!-- PIE DE PÁGINA ANTI-SPAM LEGAL (Discreto) -->
@@ -363,22 +363,24 @@ export function buildBrandedEmailHtml({
 
 /**
  * 1. Email de Bienvenida Inmediato (apenas se inscribe el lead)
+ * Enfoque FÓRMULA 100K: Entrega de valor sin fricción + Puente de conversión a Skool + Soporte WhatsApp
  */
 export async function sendWelcomeEmail(lead: Lead, config?: ClassroomConfig) {
+  const skoolUrl = config?.cta_oferta_url || 'https://www.skool.com/ia-automatiza-7412/about';
   const communityUrl = config?.whatsapp_comunidad_url || 'https://chat.whatsapp.com/LpfNzr7ZWh8KXyWvlBklQl';
-  const classroomTitle = config?.nombre_classroom || 'REGALOS EXCLUSIVOS';
+  const brandName = 'Iván Sifuentes';
 
-  const subject = `tu acceso a los recursos de IA`;
-  const bodyContent = `Hola ${lead.nombre},\n\nTe confirmo que ya tienes tu acceso listo a las herramientas y prompts de la Bóveda.\n\nPuedes entrar en cualquier momento para revisar los prompts de personajes y las plantillas que tenemos preparadas.\n\nTe dejo el enlace directo para que puedas empezar:\n\nSi tienes alguna pregunta mientras los pruebas, me puedes responder a este mismo correo o entrar al grupo de WhatsApp.`;
+  const subject = `bienvenido a los recursos de IA de Iván Sifuentes`;
+  const bodyContent = `Hola ${lead.nombre}, te saluda Iván Sifuentes.\n\nTe doy la bienvenida a mi Bóveda de Recursos de IA.\n\nYa tienes disponible tu acceso completo a las herramientas gratuitas, la Fábrica de Imágenes y los Superprompts para crear tus personajes consistentes sin complicaciones.\n\nDisfruta este contenido y ponlo en práctica desde hoy para ahorrar horas de trabajo y crear contenido de alto impacto.\n\nAhora, si tu objetivo es ir un paso más allá y buscas dominar herramientas avanzadas de IA, automatizaciones profesionales y los flujos exactos que utilizo para generar ingresos y escalar contenido, preparé un espacio exclusivo para ti:\n\nNuestra comunidad privada en **Skool**.\n\nAllí no solo descargas plantillas: tienes acompañamiento directo, actualizaciones constantes y el sistema paso a paso para monetizar tus habilidades con inteligencia artificial.`;
 
   const html = buildBrandedEmailHtml({
-    title: `Tu acceso a la Bóveda`,
+    title: `Bienvenido a la Bóveda de IA`,
     name: lead.nombre,
     bodyContent,
-    ctaText: 'Entrar a la Bóveda de Recursos',
-    ctaUrl: communityUrl,
+    ctaText: 'Entrar a la Comunidad Premium en Skool',
+    ctaUrl: skoolUrl,
     communityUrl,
-    brandName: classroomTitle,
+    brandName,
   });
 
   return sendEmail({ to: lead.email, subject, html, type: 'bienvenida', config });
