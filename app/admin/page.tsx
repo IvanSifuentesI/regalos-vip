@@ -32,7 +32,8 @@ import {
   Send,
   Copy,
   Zap,
-  Bell
+  Bell,
+  AlertCircle
 } from 'lucide-react';
 import { Modulo, Recurso, ClassroomConfig, Lead } from '@/lib/types';
 import { INITIAL_MODULOS, DEFAULT_CONFIG } from '@/lib/demoData';
@@ -45,6 +46,7 @@ export default function AdminDashboardPage() {
   // Data states
   const [modulos, setModulos] = useState<Modulo[]>(INITIAL_MODULOS);
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [isSupabaseConnected, setIsSupabaseConnected] = useState(true);
   const [config, setConfig] = useState<ClassroomConfig>(DEFAULT_CONFIG);
   const [searchLead, setSearchLead] = useState('');
   const [loading, setLoading] = useState(true);
@@ -112,6 +114,7 @@ export default function AdminDashboardPage() {
       if (leadsRes.ok) {
         const lData = await leadsRes.json();
         if (lData.leads) setLeads(lData.leads);
+        if (lData.isSupabase !== undefined) setIsSupabaseConnected(lData.isSupabase);
       }
       if (configRes.ok) {
         const confData = await configRes.json();
@@ -1064,6 +1067,24 @@ export default function AdminDashboardPage() {
         {activeTab === 'leads' && (
           <div className="space-y-6">
             
+            {/* Supabase Outage / Paused Alert */}
+            {!isSupabaseConnected && (
+              <div className="p-4 bg-amber-50 border border-amber-300 rounded-2xl flex items-start space-x-3 text-amber-950 shadow-xs">
+                <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div className="text-xs space-y-1">
+                  <p className="font-black text-amber-900">
+                    ⚠️ Base de Datos Supabase Temporalmente Inaccesible (Mostrando 2 prospectos de respaldo)
+                  </p>
+                  <p className="text-amber-800 leading-relaxed">
+                    Tus más de 20 prospectos <strong>siguen guardados y a salvo en Supabase</strong>. La aplicación no pudo conectarse debido a una pausa del proyecto o a la degradación de red de Supabase en Eastern US.
+                  </p>
+                  <p className="text-amber-950 font-semibold pt-1">
+                    👉 Si tu proyecto está pausado: Entra a <a href="https://app.supabase.com" target="_blank" rel="noopener noreferrer" className="underline font-bold text-amber-900 hover:text-black">app.supabase.com</a> y haz clic en <strong>&quot;Restore Project&quot;</strong>. En 1 minuto tus más de 20 prospectos volverán a mostrarse aquí.
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Stats cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs">

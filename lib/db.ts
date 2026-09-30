@@ -29,19 +29,28 @@ let memoryModulos: Modulo[] = JSON.parse(JSON.stringify(INITIAL_MODULOS));
 let memoryConfig: ClassroomConfig = { ...DEFAULT_CONFIG };
 
 // --- LEADS ---
-export async function getLeads(): Promise<Lead[]> {
+export async function getLeadsWithStatus(): Promise<{ leads: Lead[]; isSupabase: boolean; error?: string }> {
   if (isSupabaseAdminConfigured && supabaseAdmin) {
     try {
       const { data, error } = await supabaseAdmin
         .from('leads')
         .select('*')
         .order('created_at', { ascending: false });
-      if (!error && data) return data as Lead[];
-    } catch (err) {
+      if (!error && data) {
+        return { leads: data as Lead[], isSupabase: true };
+      }
+      return { leads: memoryLeads, isSupabase: false, error: error?.message || 'Error en Supabase' };
+    } catch (err: any) {
       console.warn('Error fetching leads from Supabase, using fallback', err);
+      return { leads: memoryLeads, isSupabase: false, error: err.message };
     }
   }
-  return memoryLeads;
+  return { leads: memoryLeads, isSupabase: false, error: 'Supabase no configurado' };
+}
+
+export async function getLeads(): Promise<Lead[]> {
+  const result = await getLeadsWithStatus();
+  return result.leads;
 }
 
 export async function addLead(lead: Omit<Lead, 'id' | 'created_at'>): Promise<Lead> {

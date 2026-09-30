@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
-import { addLead, getLeads, getConfig } from '@/lib/db';
+import { addLead, getLeadsWithStatus, getConfig } from '@/lib/db';
 import { sendWelcomeEmail, triggerWhatsAppWebhook } from '@/lib/email';
 
 export async function GET() {
   try {
-    const leads = await getLeads();
-    return NextResponse.json({ success: true, leads });
+    const { leads, isSupabase, error } = await getLeadsWithStatus();
+    return NextResponse.json({ success: true, leads, isSupabase, error });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
