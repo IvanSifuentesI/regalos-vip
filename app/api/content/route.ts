@@ -27,6 +27,29 @@ export async function POST(req: Request) {
 
     if (action === 'save_module') {
       const result = await saveModule(moduleData);
+
+      // Si se activa notificar a los alumnos por email con el diseño Divisual Luxe
+      if (body.notify_leads && moduleData?.publicado !== false) {
+        try {
+          const { getLeads, getConfig } = await import('@/lib/db');
+          const { sendContentUpdateEmail } = await import('@/lib/email');
+          const [leads, config] = await Promise.all([getLeads(), getConfig()]);
+
+          for (const lead of leads) {
+            if (lead.email) {
+              await sendContentUpdateEmail({
+                lead,
+                moduleTitle: moduleData.titulo,
+                moduleDesc: moduleData.descripcion,
+                config,
+              }).catch((e: any) => console.warn(`Error sending notification to ${lead.email}:`, e.message));
+            }
+          }
+        } catch (e: any) {
+          console.warn('Error in content update email broadcast:', e.message);
+        }
+      }
+
       return NextResponse.json({ success: true, data: result });
     }
 

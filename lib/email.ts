@@ -283,9 +283,8 @@ export async function sendEmail({
 }
 
 /**
- * Plantilla de Email 100% Humana, Anti-Spam & Conversacional (Estilo FÓRMULA 100K)
- * CERO banners pesados, CERO badges llamativos, CERO disparadores de spam.
- * Diseñada para caer directamente en la Bandeja Principal de Gmail / Outlook.
+ * Plantilla de Email Dark Mode Luxe (Estilo Divisual Project / macOS Window)
+ * Diseñada para alta conversión y máxima estética visual en todos los clientes de correo.
  */
 export function buildBrandedEmailHtml({
   title,
@@ -295,6 +294,10 @@ export function buildBrandedEmailHtml({
   ctaUrl,
   communityUrl,
   brandName = 'Iván Sifuentes',
+  badge = '• BÓVEDA IA — ACCESO EXCLUSIVO •',
+  headline,
+  subtitleUnderCta = 'Estás a tiempo de llevar tus proyectos al siguiente nivel.',
+  recipientEmail,
 }: {
   title?: string;
   name: string;
@@ -307,11 +310,22 @@ export function buildBrandedEmailHtml({
   badge?: string;
   badgeColor?: string;
   badgeTextColor?: string;
+  headline?: string;
+  subtitleUnderCta?: string;
+  recipientEmail?: string;
 }): string {
+  const displayHeadline = headline || title || 'Acceso Exclusivo a la Bóveda de IA';
+
   const formattedBody = bodyContent
     .replace(/\{\{nombre\}\}/gi, name)
     .split('\n\n')
-    .map(p => `<p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.7; color: #1f2937;">${p.replace(/\n/g, '<br/>')}</p>`)
+    .map(p => {
+      let htmlP = p
+        .replace(/\*\*(.*?)\*\*/g, '<strong style="color: #ffffff; font-weight: 700;">$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em style="color: #fbbf24; font-style: italic;">$1</em>')
+        .replace(/\n/g, '<br/>');
+      return `<p style="margin: 0 0 16px 0; font-size: 15px; line-height: 1.75; color: #cbd5e1;">${htmlP}</p>`;
+    })
     .join('');
 
   return `<!DOCTYPE html>
@@ -319,75 +333,138 @@ export function buildBrandedEmailHtml({
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${title || 'Mensaje de ' + brandName}</title>
+  <title>${title || displayHeadline}</title>
 </head>
-<body style="margin: 0; padding: 24px 12px; background-color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; color: #1f2937;">
-  <div style="max-width: 580px; margin: 0 auto;">
+<body style="margin: 0; padding: 32px 12px; background-color: #0b0b0e; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; color: #cbd5e1;">
+  
+  <!-- CONTENEDOR PRINCIPAL TIPO VENTANA MACOS (Luxe Divisual Style) -->
+  <div style="max-width: 580px; margin: 0 auto; background-color: #141418; border: 1px solid #2a2a35; border-radius: 14px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);">
     
-    <!-- CONTENIDO CONVERSACIONAL (Estilo Humano 1 a 1) -->
-    <div style="font-size: 15px; line-height: 1.7; color: #1f2937;">
-      ${formattedBody}
+    <!-- BARRA SUPERIOR MACOS (3 PUNTOS) -->
+    <div style="background-color: #1a1a22; padding: 13px 18px; border-bottom: 1px solid #252530; text-align: left;">
+      <span style="display: inline-block; width: 11px; height: 11px; border-radius: 50%; background-color: #ff5f56; margin-right: 7px; vertical-align: middle;"></span>
+      <span style="display: inline-block; width: 11px; height: 11px; border-radius: 50%; background-color: #ffbd2e; margin-right: 7px; vertical-align: middle;"></span>
+      <span style="display: inline-block; width: 11px; height: 11px; border-radius: 50%; background-color: #27c93f; vertical-align: middle;"></span>
     </div>
 
-    <!-- ENLACE / BOTÓN LIMPIO Y DISCRETO -->
-    ${ctaUrl && ctaText ? `
-      <div style="margin: 28px 0 20px 0;">
-        <a href="${ctaUrl}" target="_blank" style="display: inline-block; background-color: #111827; color: #ffffff; font-size: 14px; font-weight: 700; text-decoration: none; padding: 12px 24px; border-radius: 8px;">
-          ${ctaText} &rarr;
-        </a>
+    <!-- CUERPO DE LA VENTANA -->
+    <div style="padding: 38px 32px 34px 32px;">
+      
+      <!-- BADGE / PILL SUPERIOR -->
+      <div style="text-align: center; margin-bottom: 24px;">
+        <span style="display: inline-block; padding: 6px 16px; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #fbbf24; background-color: rgba(251, 191, 36, 0.08); border: 1px solid rgba(251, 191, 36, 0.28); border-radius: 9999px;">
+          ${badge}
+        </span>
       </div>
-    ` : ''}
 
-    ${communityUrl && communityUrl !== ctaUrl ? `
-      <p style="margin: 20px 0 0 0; font-size: 14px; color: #4b5563;">
-        P.D. También puedes unirte a nuestro <a href="${communityUrl}" target="_blank" style="color: #059669; font-weight: bold; text-decoration: underline;">grupo oficial de WhatsApp</a> si tienes dudas para resolverlas en vivo.
-      </p>
-    ` : ''}
+      <!-- TITULAR EDITORIAL EN GEORGIA SERIF CON ACENTOS DORADOS -->
+      <h1 style="margin: 0 0 16px 0; font-family: 'Georgia', serif; font-size: 24px; font-weight: 700; line-height: 1.35; color: #ffffff; text-align: center;">
+        ${displayHeadline}
+      </h1>
 
-    <!-- FIRMA PERSONAL HUMANA -->
-    <div style="margin-top: 32px; padding-top: 20px; border-top: 1px solid #f3f4f6;">
-      <p style="margin: 0; font-size: 15px; font-weight: 700; color: #111827;">${brandName}</p>
-      <p style="margin: 4px 0 0 0; font-size: 12px; color: #6b7280;">Automatizaciones & Contenido con Inteligencia Artificial</p>
+      <!-- LÍNEA DIVISORIA DORADA -->
+      <div style="width: 44px; height: 2px; background-color: #c59b27; margin: 0 auto 28px auto; border-radius: 2px;"></div>
+
+      <!-- CONTENIDO NARRATIVO Y CONVERSACIONAL -->
+      <div style="font-size: 15px; line-height: 1.75; color: #cbd5e1;">
+        ${formattedBody}
+      </div>
+
+      <!-- BOTÓN DORADO METÁLICO (LUXE CTA) -->
+      ${ctaUrl && ctaText ? `
+        <div style="text-align: center; margin: 34px 0 20px 0;">
+          <a href="${ctaUrl}" target="_blank" style="display: inline-block; background-color: #c59b27; background: linear-gradient(135deg, #d4af37 0%, #c59b27 100%); color: #0a0a0c; font-size: 14px; font-weight: 800; letter-spacing: 0.5px; text-decoration: none; padding: 15px 32px; border-radius: 10px; box-shadow: 0 4px 20px rgba(212, 175, 55, 0.35); text-transform: uppercase;">
+            ${ctaText} &rarr;
+          </a>
+          ${subtitleUnderCta ? `
+            <p style="margin: 12px 0 0 0; font-size: 13px; font-style: italic; color: #94a3b8; text-align: center;">
+              Accede ahora. <span style="color: #fbbf24; font-weight: 600;">${subtitleUnderCta}</span>
+            </p>
+          ` : ''}
+        </div>
+      ` : ''}
+
+      <!-- CANAL SECUNDARIO WHATSAPP -->
+      ${communityUrl ? `
+        <div style="margin: 28px 0 0 0; padding: 14px 18px; background-color: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; text-align: center;">
+          <p style="margin: 0; font-size: 13px; color: #94a3b8;">
+            ¿Tienes alguna duda técnica? <a href="${communityUrl}" target="_blank" style="color: #34d399; font-weight: 700; text-decoration: underline;">Únete al grupo de WhatsApp</a> para resolverla en vivo.
+          </p>
+        </div>
+      ` : ''}
+
+      <!-- FIRMA PERSONAL EDITORIAL -->
+      <div style="margin-top: 36px; padding-top: 24px; border-top: 1px solid #252530;">
+        <p style="margin: 0 0 8px 0; font-size: 13px; color: #94a3b8; font-style: italic;">Te veo dentro.</p>
+        <p style="margin: 0; font-size: 16px; font-weight: 700; color: #ffffff;">${brandName}</p>
+        <p style="margin: 3px 0 6px 0; font-size: 13px; font-weight: 700; color: #fbbf24;">Bóveda de Inteligencia Artificial</p>
+        <p style="margin: 0; font-size: 12px; color: #64748b;">
+          🏆 Mentor de Automatizaciones & Flujos con IA &middot; Skool
+        </p>
+      </div>
+
     </div>
-
-    <!-- PIE DE PÁGINA ANTI-SPAM LEGAL (Discreto) -->
-    <div style="margin-top: 36px; padding-top: 16px; border-top: 1px solid #e5e7eb; font-size: 11px; color: #9ca3af; line-height: 1.5;">
-      <p style="margin: 0 0 4px 0;">Recibes este mensaje porque te registraste en nuestra página para acceder a las herramientas y prompts de IA.</p>
-      <p style="margin: 0;">Para darte de baja o dejar de recibir estos avisos, responde a este correo con la palabra "Baja".</p>
-    </div>
-
   </div>
+
+  <!-- WATERMARK Y PIE DE PÁGINA EXTERIOR -->
+  <div style="max-width: 580px; margin: 26px auto 0 auto; text-align: center; font-size: 11px; color: #475569; line-height: 1.6;">
+    <p style="margin: 0 0 6px 0; font-size: 12px; font-weight: 600; color: #64748b;">Claude Code &times; Iván Sifuentes</p>
+    <p style="margin: 0 0 6px 0;">&copy; 2026 Iván Sifuentes &middot; Bóveda de IA</p>
+    ${recipientEmail ? `<p style="margin: 0 0 4px 0;">Enviado a <span style="color: #94a3b8;">${recipientEmail}</span></p>` : ''}
+    <p style="margin: 0;"><a href="mailto:ivansifuentes340@gmail.com?subject=Baja" style="color: #64748b; text-decoration: underline;">Cancelar suscripción</a></p>
+  </div>
+
 </body>
 </html>`;
 }
 
 /**
  * 1. Email de Bienvenida Inmediato (apenas se inscribe el lead)
- * Enfoque FÓRMULA 100K: Entrega de valor sin fricción + Puente de conversión a Skool + Soporte WhatsApp
+ * Enfoque Divisual Dark Luxe + FÓRMULA 100K
  */
 export async function sendWelcomeEmail(lead: Lead, config?: ClassroomConfig) {
   const skoolUrl = config?.cta_oferta_url || 'https://www.skool.com/ia-automatiza-7412/about';
   const communityUrl = config?.whatsapp_comunidad_url || 'https://chat.whatsapp.com/LpfNzr7ZWh8KXyWvlBklQl';
   const brandName = 'Iván Sifuentes';
 
-  const subject = `bienvenido a los recursos de IA de Iván Sifuentes`;
-  const bodyContent = `Hola ${lead.nombre}, te saluda Iván Sifuentes.\n\nTe doy la bienvenida a mi Bóveda de Recursos de IA.\n\nYa tienes disponible tu acceso completo a las herramientas gratuitas, la Fábrica de Imágenes y los Superprompts para crear tus personajes consistentes sin complicaciones.\n\nDisfruta este contenido y ponlo en práctica desde hoy para ahorrar horas de trabajo y crear contenido de alto impacto.\n\nAhora, si tu objetivo es ir un paso más allá y buscas dominar herramientas avanzadas de IA, automatizaciones profesionales y los flujos exactos que utilizo para generar ingresos y escalar contenido, preparé un espacio exclusivo para ti:\n\nNuestra comunidad privada en **Skool**.\n\nAllí no solo descargas plantillas: tienes acompañamiento directo, actualizaciones constantes y el sistema paso a paso para monetizar tus habilidades con inteligencia artificial.`;
+  const subject = `Bienvenido a la Bóveda de IA.`;
+  const headline = `Bienvenido a los recursos de IA de Iván Sifuentes.`;
+
+  const bodyContent = `Hola ${lead.nombre}, te doy la bienvenida.
+
+Ya tienes tu acceso desbloqueado a las herramientas gratuitas, la Fábrica de Imágenes y los Superprompts para crear personajes consistentes.
+
+*Pruébalos hoy mismo. Te van a ahorrar días enteros de trabajo.*
+
+Pero quiero ser completamente honesto contigo:
+
+Las herramientas gratuitas son solo el primer paso. El verdadero salto ocurre cuando dejas de usar la IA como un simple juguete y comienzas a **automatizar sistemas completos que generan ingresos y escalan tu contenido**.
+
+Por eso creé un espacio privado y avanzado:
+
+Nuestra comunidad oficial en **Skool**.
+
+Allí encuentras los flujos de trabajo premium, herramientas sin restricciones, acompañamiento directo y las estrategias exactas que no comparto en abierto.`;
 
   const html = buildBrandedEmailHtml({
-    title: `Bienvenido a la Bóveda de IA`,
+    title: subject,
+    headline,
+    badge: '• BÓVEDA IA — ACCESO EXCLUSIVO •',
     name: lead.nombre,
     bodyContent,
-    ctaText: 'Entrar a la Comunidad Premium en Skool',
+    ctaText: 'VER LA COMUNIDAD EN SKOOL',
     ctaUrl: skoolUrl,
+    subtitleUnderCta: 'Estás a tiempo de llevar tus proyectos al siguiente nivel.',
     communityUrl,
     brandName,
+    recipientEmail: lead.email,
   });
 
   return sendEmail({ to: lead.email, subject, html, type: 'bienvenida', config });
 }
 
 /**
- * 2. Notificación de Nuevo Módulo / Actualización de Contenido
+ * 2. Notificación Automática de Nuevo Módulo / Recurso (Estilo Luxe Divisual)
  */
 export async function sendContentUpdateEmail({
   lead,
@@ -400,21 +477,74 @@ export async function sendContentUpdateEmail({
   moduleDesc?: string;
   config?: ClassroomConfig;
 }) {
-  const classroomTitle = config?.nombre_classroom || 'REGALOS EXCLUSIVOS';
-  const subject = `nuevo contenido: ${moduleTitle}`;
-  const bodyContent = `Hola ${lead.nombre},\n\nTe aviso rápido que acabo de subir una nueva actualización a la Bóveda:\n\n**${moduleTitle}**\n${moduleDesc || 'Nuevas herramientas y prompts listos para implementar.'}\n\nPuedes revisarlo directamente en tu cuenta:`;
+  const brandName = 'Iván Sifuentes';
+  const skoolUrl = config?.cta_oferta_url || 'https://www.skool.com/ia-automatiza-7412/about';
+  const subject = `Nuevo recurso disponible: ${moduleTitle}`;
+  const headline = `Acabo de subir una nueva actualización a la Bóveda.`;
+
+  const bodyContent = `Hola ${lead.nombre},
+
+Te aviso rápido porque acabo de liberar un nuevo recurso en la Bóveda:
+
+**${moduleTitle}**
+*${moduleDesc || 'Nueva herramienta y prompts listos para implementar de inmediato.'}*
+
+Ya puedes entrar a tu panel para probarlo y ver cómo aplicarlo en tus contenidos.
+
+Recuerda que si quieres dominar las automatizaciones a fondo y tener acceso a nuestras sesiones en vivo y plantillas premium, te espero en la comunidad privada de Skool.`;
 
   const html = buildBrandedEmailHtml({
-    title: moduleTitle,
+    title: subject,
+    headline,
+    badge: '• NUEVO RECURSO DISPONIBLE •',
     name: lead.nombre,
     bodyContent,
-    ctaText: 'Ver contenido en la Bóveda',
-    ctaUrl: config?.whatsapp_comunidad_url || '#',
+    ctaText: 'ACCEDER AL NUEVO RECURSO',
+    ctaUrl: skoolUrl,
+    subtitleUnderCta: 'Pruébalo antes de que pase desapercibido.',
     communityUrl: config?.whatsapp_comunidad_url,
-    brandName: classroomTitle,
+    brandName,
+    recipientEmail: lead.email,
   });
 
   return sendEmail({ to: lead.email, subject, html, type: 'actualizacion', config });
+}
+
+/**
+ * 3. Email de Seguimiento Día 2: "¿Ya probaste la Fábrica de Imágenes IA?"
+ */
+export async function sendFollowUpDay2Email(lead: Lead, config?: ClassroomConfig) {
+  const skoolUrl = config?.cta_oferta_url || 'https://www.skool.com/ia-automatiza-7412/about';
+  const subject = `¿Ya probaste la Fábrica de Imágenes IA?`;
+  const headline = `Una pregunta rápida sobre tus resultados con IA.`;
+
+  const bodyContent = `Hola ${lead.nombre},
+
+Hace un par de días te di acceso a la Fábrica de Imágenes y al Superprompt de personajes.
+
+Quería preguntarte: *¿ya lograste generar tus primeras imágenes consistentes?*
+
+Muchos creadores cometen el error de acumular herramientas y prompts sin probarlos en un proyecto real. Mi recomendación es que hoy mismo abras la lección 2, pegues el prompt y veas la magia en ChatGPT.
+
+Y si ya lo probaste y estás listo para crear flujos automatizados que trabajen por ti en piloto automático:
+
+En nuestra comunidad de **Skool** te muestro exactamente cómo conectar estas imágenes con clonación de voz, avatares y edición automática.`;
+
+  const html = buildBrandedEmailHtml({
+    title: subject,
+    headline,
+    badge: '• SEGUIMIENTO — CASO PRÁCTICO •',
+    name: lead.nombre,
+    bodyContent,
+    ctaText: 'VER CASOS AVANZADOS EN SKOOL',
+    ctaUrl: skoolUrl,
+    subtitleUnderCta: 'Aprende los flujos completos que ahorran 20 horas a la semana.',
+    communityUrl: config?.whatsapp_comunidad_url,
+    brandName: 'Iván Sifuentes',
+    recipientEmail: lead.email,
+  });
+
+  return sendEmail({ to: lead.email, subject, html, type: 'calentamiento', config });
 }
 
 /**

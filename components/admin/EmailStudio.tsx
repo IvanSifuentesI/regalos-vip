@@ -492,65 +492,80 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
               </span>
             </div>
 
-            {/* Email Mockup Container - Clean Human 1 to 1 Format (Cero Banner / Anti-Spam) */}
-            <div className="bg-gray-100 p-3 sm:p-4 rounded-2xl border border-gray-200">
-              <div className="bg-white rounded-xl shadow-xs border border-gray-200 p-5 space-y-4">
+            {/* Email Mockup Container - Luxe Divisual macOS Window Format */}
+            <div className="bg-[#09090c] p-3 sm:p-5 rounded-2xl border border-gray-800 shadow-2xl">
+              <div className="bg-[#141418] rounded-xl border border-[#2a2a35] overflow-hidden shadow-2xl space-y-0 text-left">
                 
-                {/* Sender Header with Avatar simulation */}
-                <div className="flex items-center space-x-3 pb-3 border-b border-gray-100">
-                  <div className="w-9 h-9 rounded-full bg-slate-800 text-yellow-400 font-bold text-xs flex items-center justify-center shadow-xs flex-shrink-0">
-                    {senderName ? senderName.substring(0, 2).toUpperCase() : 'IV'}
+                {/* macOS Window Titlebar with 3 dots */}
+                <div className="bg-[#1a1a22] px-4 py-3 border-b border-[#252530] flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f56] inline-block shadow-xs"></span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e] inline-block shadow-xs"></span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#27c93f] inline-block shadow-xs"></span>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-gray-900 truncate">
-                        {senderName}
-                      </span>
-                      <span className="text-[10px] text-gray-400">12:45 p. m.</span>
-                    </div>
-                    <span className="text-[10px] text-gray-400 block truncate">
-                      para: {leads[0]?.nombre || 'Iván'} &lt;{leads[0]?.email || 'prospecto@gmail.com'}&gt;
+                  <span className="text-[10px] font-mono text-gray-500 uppercase tracking-wider">
+                    Bóveda IA &times; Skool
+                  </span>
+                </div>
+
+                {/* macOS Window Content Area */}
+                <div className="p-5 sm:p-6 space-y-4">
+                  
+                  {/* Badge */}
+                  <div className="text-center pt-1">
+                    <span className="inline-block px-3 py-1 rounded-full text-[10px] font-extrabold tracking-widest text-[#fbbf24] bg-amber-400/10 border border-amber-400/30 uppercase">
+                      • BÓVEDA IA — ACCESO EXCLUSIVO •
                     </span>
                   </div>
-                </div>
 
-                {/* Subject Preview */}
-                <div>
-                  <h4 className="text-sm font-bold text-gray-900 leading-snug">
-                    {emailSubject.replace(/\{\{nombre\}\}/gi, leads[0]?.nombre || 'Iván')}
-                  </h4>
-                </div>
-
-                {/* Body Preview (Clean 1 to 1 conversation) */}
-                <div className="text-xs sm:text-[13px] text-gray-700 leading-relaxed whitespace-pre-line">
-                  {emailBody.replace(/\{\{nombre\}\}/gi, leads[0]?.nombre || 'Iván')}
-                </div>
-
-                {/* CTA Button Preview (Discreet & Clean) */}
-                {ctaButtonUrl && (
-                  <div className="pt-1">
-                    <div className="inline-block bg-gray-900 text-white font-bold text-xs px-4 py-2 rounded-lg shadow-xs">
-                      {ctaButtonText} &rarr;
-                    </div>
+                  {/* Headline in Serif Style */}
+                  <div className="text-center">
+                    <h4 className="font-serif text-base sm:text-lg font-bold text-white leading-snug">
+                      {emailSubject.replace(/\{\{nombre\}\}/gi, leads[0]?.nombre || 'Iván')}
+                    </h4>
+                    <div className="w-10 h-0.5 bg-[#c59b27] mx-auto mt-2 rounded-full"></div>
                   </div>
-                )}
 
-                {/* WhatsApp P.D. Note */}
-                <p className="text-[11px] text-gray-500 leading-relaxed">
-                  P.D. También puedes unirte a nuestro <span className="text-emerald-700 font-bold underline cursor-pointer">grupo oficial de WhatsApp</span> si tienes dudas para resolverlas en vivo.
-                </p>
+                  {/* Body Preview (Luxe Narrative Style) */}
+                  <div className="text-xs text-gray-300 leading-relaxed whitespace-pre-line font-sans">
+                    {emailBody.replace(/\{\{nombre\}\}/gi, leads[0]?.nombre || 'Iván')}
+                  </div>
 
-                {/* Signature Preview */}
-                <div className="pt-3 border-t border-gray-100">
-                  <p className="text-xs font-bold text-gray-900">{senderName}</p>
-                  <p className="text-[10px] text-gray-400">Bóveda de Recursos & Herramientas de IA</p>
+                  {/* Luxe Gold CTA Button */}
+                  {ctaButtonUrl && (
+                    <div className="text-center pt-3 pb-1">
+                      <div className="inline-block bg-gradient-to-r from-[#d4af37] to-[#c59b27] text-gray-950 font-black text-xs px-5 py-3 rounded-xl shadow-lg shadow-amber-500/20 uppercase tracking-wide cursor-pointer hover:brightness-110 transition-all">
+                        {ctaButtonText} &rarr;
+                      </div>
+                      <p className="text-[11px] text-gray-400 italic mt-2">
+                        Accede ahora. <span className="text-[#fbbf24] font-semibold">Estás a tiempo de no quedarte atrás.</span>
+                      </p>
+                    </div>
+                  )}
+
+                  {/* WhatsApp Secondary Note */}
+                  <div className="p-3 bg-white/5 border border-white/10 rounded-lg text-center">
+                    <p className="text-[11px] text-gray-400">
+                      ¿Tienes alguna duda técnica? <span className="text-emerald-400 font-bold underline cursor-pointer">Únete al WhatsApp oficial</span> para resolverla en vivo.
+                    </p>
+                  </div>
+
+                  {/* Signature Preview */}
+                  <div className="pt-4 border-t border-[#252530]">
+                    <p className="text-[11px] text-gray-400 italic">Te veo dentro.</p>
+                    <p className="text-sm font-bold text-white mt-1">{senderName}</p>
+                    <p className="text-[11px] font-bold text-[#fbbf24]">Bóveda de Inteligencia Artificial</p>
+                    <p className="text-[10px] text-gray-400 mt-0.5">🏆 Mentor de Automatizaciones & Flujos con IA &middot; Skool</p>
+                  </div>
+
                 </div>
 
-                {/* Footer Anti-Spam Preview */}
-                <div className="pt-2 border-t border-gray-100 text-[10px] text-gray-400 leading-relaxed">
-                  <p>Recibes este correo porque te registraste en nuestra página oficial. Cero spam.</p>
-                </div>
+              </div>
 
+              {/* Watermark Outer Footer */}
+              <div className="text-center mt-3 text-[10px] text-gray-400 space-y-1">
+                <p className="font-semibold text-gray-400">Claude Code &times; Iván Sifuentes</p>
+                <p>&copy; 2026 Iván Sifuentes &middot; Bóveda de IA</p>
               </div>
             </div>
 
