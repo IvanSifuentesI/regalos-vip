@@ -388,7 +388,7 @@ export function buildBrandedEmailHtml({
       ${communityUrl ? `
         <div style="margin: 28px 0 0 0; padding: 14px 18px; background-color: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; text-align: center;">
           <p style="margin: 0; font-size: 13px; color: #94a3b8;">
-            ¿Tienes alguna duda técnica? <a href="${communityUrl}" target="_blank" style="color: #34d399; font-weight: 700; text-decoration: underline;">Únete al grupo de WhatsApp</a> para resolverla en vivo.
+            🎁 Si no quieres perderte ninguna herramienta gratis nueva, <a href="${communityUrl}" target="_blank" style="color: #34d399; font-weight: 700; text-decoration: underline;">únete al grupo oficial de WhatsApp</a> (allí seguiré pasando recursos exclusivos y avisos importantes).
           </p>
         </div>
       ` : ''}

@@ -883,7 +883,7 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
                   {/* WhatsApp Secondary Note */}
                   <div className="p-3 bg-white/5 border border-white/10 rounded-lg text-center">
                     <p className="text-[11px] text-gray-400">
-                      ¿Tienes alguna duda técnica? <span className="text-emerald-400 font-bold underline cursor-pointer">Únete al WhatsApp oficial</span> para resolverla en vivo.
+                      🎁 Si no quieres perderte ninguna herramienta gratis nueva, <span className="text-emerald-400 font-bold underline cursor-pointer">únete al WhatsApp oficial</span> (allí seguiré pasando recursos exclusivos y avisos importantes).
                     </p>
                   </div>
 
@@ -891,8 +891,8 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
                   <div className="pt-4 border-t border-[#252530]">
                     <p className="text-[11px] text-gray-400 italic">Te veo dentro.</p>
                     <p className="text-sm font-bold text-white mt-1">{senderName}</p>
-                    <p className="text-[11px] font-bold text-[#fbbf24]">Bóveda de Inteligencia Artificial</p>
-                    <p className="text-[10px] text-gray-400 mt-0.5">🏆 Mentor de Automatizaciones & Flujos con IA &middot; Skool</p>
+                    <p className="text-[11px] font-bold text-[#fbbf24]">Comunidad de Automatización & Monetización IA</p>
+                    <p className="text-[10px] text-gray-400 mt-0.5">🏆 Skool Games Winner en Dinero &middot; +487 Casos de Éxito LATAM</p>
                   </div>
 
                 </div>
