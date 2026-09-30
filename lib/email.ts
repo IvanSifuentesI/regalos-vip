@@ -30,6 +30,91 @@ export function extractSenderName(input?: string, fallback: string = 'Iván Sifu
   return fallback;
 }
 
+// Lista negra de nombres genéricos o placeholders que jamás deben usarse como saludo
+const INVALID_GREETING_NAMES = new Set([
+  'lead sin nombre',
+  'sin nombre',
+  'sin_nombre',
+  'nombre',
+  'name',
+  'lead',
+  'prospecto',
+  'amigo',
+  'amiga',
+  'user',
+  'usuario',
+  'test',
+  'prueba',
+  'admin',
+  'administrador',
+  'dd',
+  'xx',
+  'aa',
+  'bb',
+  'cc',
+  'null',
+  'undefined',
+  'unknown',
+  'desconocido',
+  'info',
+  'contacto',
+  'soporte',
+  'support',
+  'ventas',
+  'sales',
+  'hola',
+  'hello',
+]);
+
+/**
+ * Limpia y formatea el nombre del destinatario para un saludo humano y natural.
+ * - Extrae el primer nombre (e.g. "Juan Carlos" -> "Juan") y lo capitaliza ("JUAN" -> "Juan").
+ * - Filtra palabras genéricas como "nombre", "Lead sin nombre", "Dd", "test".
+ * - Si el nombre es inválido o no existe, intenta inferirlo limpiamente del correo (e.g. "juan98yup@gmail.com" -> "Juan").
+ * - Si no es posible inferir un nombre real, devuelve "" para que el saludo quede limpiamente como "Hola,".
+ */
+export function formatGreetingName(rawName?: string | null, email?: string | null): string {
+  let candidate = (rawName || '').trim();
+
+  // Si contiene un arroba o parece correo, no es un nombre válido
+  if (candidate.includes('@')) {
+    candidate = '';
+  }
+
+  // Eliminar signos de puntuación o símbolos al inicio o final
+  candidate = candidate.replace(/^[^a-zA-ZáéíóúÁÉÍÓÚñÑ]+|[^a-zA-ZáéíóúÁÉÍÓÚñÑ]+$/g, '').trim();
+
+  // Si es muy corto (< 2 letras) o está en la lista de inválidos, descartar
+  if (candidate.length < 2 || INVALID_GREETING_NAMES.has(candidate.toLowerCase())) {
+    candidate = '';
+  }
+
+  // Si no tenemos candidato válido, intentar extraerlo del prefijo del correo
+  if (!candidate && email && email.includes('@')) {
+    const handle = email.split('@')[0].trim();
+    // Extraer primera palabra alfabética de al menos 3 letras (e.g. "juan98yup" -> "juan")
+    const match = handle.match(/^([a-zA-ZáéíóúÁÉÍÓÚñÑ]{3,15})/);
+    if (match) {
+      const derived = match[1].toLowerCase();
+      const emailDomainExclusions = ['gmail', 'hotmail', 'yahoo', 'outlook', 'icloud', 'proton', 'correo', 'mail'];
+      const hasVowels = /[aeiouáéíóú]/i.test(derived);
+      if (hasVowels && !INVALID_GREETING_NAMES.has(derived) && !emailDomainExclusions.includes(derived)) {
+        candidate = derived;
+      }
+    }
+  }
+
+  if (!candidate) {
+    return '';
+  }
+
+  // Tomar solo el primer nombre para un tono cercano y amigable
+  const firstName = candidate.split(/\s+/)[0];
+
+  // Capitalizar la primera letra y minúsculas el resto
+  return firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
+}
+
 // Diagnose Brevo Account & Senders
 export async function diagnoseBrevo(apiKey?: string, testSenderEmail?: string) {
   const key = apiKey || process.env.BREVO_API_KEY;
@@ -300,7 +385,7 @@ export function buildBrandedEmailHtml({
   recipientEmail,
 }: {
   title?: string;
-  name: string;
+  name?: string;
   bodyContent: string;
   ctaText?: string;
   ctaUrl?: string;
@@ -316,8 +401,30 @@ export function buildBrandedEmailHtml({
 }): string {
   const displayHeadline = headline || title || 'Acceso Exclusivo a la Bóveda de IA';
 
-  const formattedBody = bodyContent
-    .replace(/\{\{nombre\}\}/gi, name)
+  // Sanitizar y obtener nombre limpio para el saludo
+  const cleanName = formatGreetingName(name, recipientEmail);
+
+  let processedBody = bodyContent;
+  if (cleanName) {
+    // Si tenemos un nombre válido (ej. "Juan")
+    processedBody = processedBody
+      .replace(/Hola\s*,?\s*\{\{nombre\}\}/gi, `Hola ${cleanName}`)
+      .replace(/\{\{nombre\}\}/gi, cleanName);
+  } else {
+    // Si no hay nombre válido o era un placeholder, ajustar gramática limpiamente
+    processedBody = processedBody
+      .replace(/Hola\s*,?\s*\{\{nombre\}\}\s*,?/gi, 'Hola,')
+      .replace(/\{\{nombre\}\}/gi, '');
+  }
+
+  // Limpieza exhaustiva de cualquier rezago de placeholders o dobles comas
+  processedBody = processedBody
+    .replace(/Hola\s+(lead sin nombre|sin nombre|nombre|name|amigo|user|usuario|dd)\s*,?/gi, 'Hola,')
+    .replace(/Hola\s*,\s*,/gi, 'Hola,')
+    .replace(/Hola\s*,\s*te saluda/gi, 'Hola, te saluda')
+    .replace(/Hola\s*,(\S)/gi, 'Hola, $1');
+
+  const formattedBody = processedBody
     .split('\n\n')
     .map(p => {
       let htmlP = p
@@ -427,10 +534,13 @@ export async function sendWelcomeEmail(lead: Lead, config?: ClassroomConfig) {
   const communityUrl = config?.whatsapp_comunidad_url || 'https://chat.whatsapp.com/LpfNzr7ZWh8KXyWvlBklQl';
   const brandName = 'Iván Sifuentes';
 
+  const cleanName = formatGreetingName(lead.nombre, lead.email);
+  const greeting = cleanName ? `Hola ${cleanName}, te saluda Iván Sifuentes.` : `Hola, te saluda Iván Sifuentes.`;
+
   const subject = `No te falta disciplina. Te falta un sistema.`;
   const headline = `Bienvenido a la Bóveda de Recursos y Automatizaciones IA.`;
 
-  const bodyContent = `Hola ${lead.nombre}, te saluda Iván Sifuentes.
+  const bodyContent = `${greeting}
 
 Te doy la bienvenida a mi Bóveda de Recursos de IA. Ya tienes tu acceso desbloqueado para probar las primeras herramientas gratuitas.
 
@@ -454,7 +564,7 @@ Ahora mismo puedes acceder a toda la academia por **solo $14/mes** (antes $10, y
     title: subject,
     headline,
     badge: '• BÓVEDA IA & AUTOMATIZACIONES •',
-    name: lead.nombre,
+    name: cleanName,
     bodyContent,
     ctaText: 'UNIRME A LA COMUNIDAD POR $14',
     ctaUrl: skoolUrl,
@@ -486,7 +596,10 @@ export async function sendContentUpdateEmail({
   const subject = `Nuevo recurso disponible: ${moduleTitle}`;
   const headline = `Acabo de subir una nueva actualización a la Bóveda.`;
 
-  const bodyContent = `Hola ${lead.nombre},
+  const cleanName = formatGreetingName(lead.nombre, lead.email);
+  const greeting = cleanName ? `Hola ${cleanName},` : `Hola,`;
+
+  const bodyContent = `${greeting}
 
 Te aviso rápido porque acabo de liberar un nuevo recurso en la Bóveda:
 
@@ -501,7 +614,7 @@ Recuerda que si quieres dominar las automatizaciones a fondo, tener nuestros sof
     title: subject,
     headline,
     badge: '• NUEVO RECURSO DISPONIBLE •',
-    name: lead.nombre,
+    name: cleanName,
     bodyContent,
     ctaText: 'ACCEDER AL NUEVO RECURSO',
     ctaUrl: skoolUrl,
@@ -522,7 +635,10 @@ export async function sendFollowUpDay2Email(lead: Lead, config?: ClassroomConfig
   const subject = `¿Ya probaste el software de automatización para Windows?`;
   const headline = `Automatiza Meta AI, Grok y Veo3 sin copiar prompts a mano.`;
 
-  const bodyContent = `Hola ${lead.nombre},
+  const cleanName = formatGreetingName(lead.nombre, lead.email);
+  const greeting = cleanName ? `Hola ${cleanName},` : `Hola,`;
+
+  const bodyContent = `${greeting}
 
 El mayor error de los creadores es pasar 6 horas al día copiando prompts a mano de una pestaña a otra.
 
@@ -538,7 +654,7 @@ Te veo dentro de nuestra comunidad en Skool. Recuerda que el acceso aún está a
     title: subject,
     headline,
     badge: '• SEGUIMIENTO — AUTOMATIZACIÓN •',
-    name: lead.nombre,
+    name: cleanName,
     bodyContent,
     ctaText: 'VER AUTOMATIZACIONES EN SKOOL',
     ctaUrl: skoolUrl,

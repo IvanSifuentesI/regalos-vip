@@ -154,6 +154,8 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
     setIsSendingTest(true);
     setTestResult(null);
 
+    const matchedLead = leads.find(l => l.email?.trim().toLowerCase() === testEmailTo.trim().toLowerCase());
+
     try {
       const res = await fetch('/api/email', {
         method: 'POST',
@@ -161,6 +163,7 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
         body: JSON.stringify({
           action: 'test_send',
           to: testEmailTo.trim(),
+          nombre: matchedLead?.nombre || undefined,
           customSubject: emailSubject,
           bodyContent: emailBody,
           ctaText: ctaButtonText,
@@ -173,7 +176,7 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
       if (data.success && data.mode !== 'brevo_error') {
         setTestResult({
           success: true,
-          message: `✅ ¡Correo de prueba enviado a ${testEmailTo}! Revisa tu bandeja de entrada (ID: ${data.id || 'ok'}).`,
+          message: `✅ ¡Correo de prueba enviado a ${testEmailTo}! Saludo: "${data.greetingName ? `Hola ${data.greetingName}` : 'Hola'}". Revisa tu bandeja de entrada.`,
         });
       } else {
         setTestResult({
@@ -858,14 +861,16 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
                   {/* Headline in Serif Style */}
                   <div className="text-center">
                     <h4 className="font-serif text-base sm:text-lg font-bold text-white leading-snug">
-                      {emailSubject.replace(/\{\{nombre\}\}/gi, leads[0]?.nombre || 'Iván')}
+                      {emailSubject.replace(/\{\{nombre\}\}/gi, (leads[0]?.nombre && !['Lead sin nombre', 'Dd', 'nombre'].includes(leads[0].nombre) ? leads[0].nombre.split(' ')[0] : 'Juan'))}
                     </h4>
                     <div className="w-10 h-0.5 bg-[#c59b27] mx-auto mt-2 rounded-full"></div>
                   </div>
 
                   {/* Body Preview (Luxe Narrative Style) */}
                   <div className="text-xs text-gray-300 leading-relaxed whitespace-pre-line font-sans">
-                    {emailBody.replace(/\{\{nombre\}\}/gi, leads[0]?.nombre || 'Iván')}
+                    {emailBody
+                      .replace(/Hola\s*,?\s*\{\{nombre\}\}/gi, `Hola ${(leads[0]?.nombre && !['Lead sin nombre', 'Dd', 'nombre'].includes(leads[0].nombre) ? leads[0].nombre.split(' ')[0] : 'Juan')}`)
+                      .replace(/\{\{nombre\}\}/gi, (leads[0]?.nombre && !['Lead sin nombre', 'Dd', 'nombre'].includes(leads[0].nombre) ? leads[0].nombre.split(' ')[0] : 'Juan'))}
                   </div>
 
                   {/* Luxe Gold CTA Button */}

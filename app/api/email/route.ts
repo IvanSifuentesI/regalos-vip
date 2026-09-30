@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getLeads, getConfig } from '@/lib/db';
-import { sendContentUpdateEmail, sendEmail, emailHistoryLogs, diagnoseBrevo, buildBrandedEmailHtml } from '@/lib/email';
+import { sendContentUpdateEmail, sendEmail, emailHistoryLogs, diagnoseBrevo, buildBrandedEmailHtml, formatGreetingName } from '@/lib/email';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -40,6 +40,11 @@ export async function POST(req: Request) {
         email_remitente: body.email_remitente || config.email_remitente || process.env.BREVO_SENDER_EMAIL,
       };
 
+      // Si el correo coincide con un lead registrado, obtenemos su nombre, o lo inferimos del email
+      const matchedLead = leads.find((l: any) => l.email?.trim().toLowerCase() === to.trim().toLowerCase());
+      const candidateName = body.nombre || matchedLead?.nombre || '';
+      const cleanName = formatGreetingName(candidateName, to);
+
       const testSubject = customSubject || body.subject || `tu acceso a las herramientas de IA (prueba)`;
       const ctaBtnText = ctaText || 'Entrar a la Bóveda de Recursos';
       const ctaBtnUrl = ctaUrl || effectiveConfig.whatsapp_comunidad_url || 'https://chat.whatsapp.com/LpfNzr7ZWh8KXyWvlBklQl';
@@ -49,17 +54,22 @@ export async function POST(req: Request) {
 
       const testHtml = buildBrandedEmailHtml({
         title: testSubject,
-        name: body.nombre || 'Iván',
+        name: cleanName,
         bodyContent: content,
         ctaText: ctaBtnText,
         ctaUrl: ctaBtnUrl,
         communityUrl: effectiveConfig.whatsapp_comunidad_url,
         brandName: classroomTitle,
+        recipientEmail: to,
       });
+
+      const personalizedSubject = cleanName
+        ? testSubject.replace(/\{\{nombre\}\}/gi, cleanName)
+        : testSubject.replace(/\{\{nombre\}\}/gi, '').replace(/\s{2,}/g, ' ').trim();
 
       const result = await sendEmail({
         to,
-        subject: testSubject.replace(/\{\{nombre\}\}/gi, body.nombre || 'Iván'),
+        subject: personalizedSubject,
         html: testHtml,
         type: 'calentamiento',
         config: effectiveConfig,
@@ -71,6 +81,7 @@ export async function POST(req: Request) {
         id: result.id,
         error: result.error,
         to,
+        greetingName: cleanName,
       });
     }
 
@@ -96,20 +107,25 @@ export async function POST(req: Request) {
 
       for (const lead of leads) {
         try {
-          const recipientName = lead.nombre || 'Amigo';
-          const personalizedSubject = customSubject.replace(/\{\{nombre\}\}/gi, recipientName);
+          const cleanName = formatGreetingName(lead.nombre, lead.email);
+          const personalizedSubject = cleanName
+            ? customSubject.replace(/\{\{nombre\}\}/gi, cleanName)
+            : customSubject.replace(/\{\{nombre\}\}/gi, '').replace(/\s{2,}/g, ' ').trim();
 
           const personalizedHtml = bodyContent
             ? buildBrandedEmailHtml({
                 title: personalizedSubject,
-                name: recipientName,
+                name: cleanName,
                 bodyContent: bodyContent,
                 ctaText: ctaBtnText,
                 ctaUrl: ctaBtnUrl,
                 communityUrl: effectiveConfig.whatsapp_comunidad_url,
                 brandName: classroomTitle,
+                recipientEmail: lead.email,
               })
-            : (customHtml || '').replace(/\{\{nombre\}\}/gi, recipientName);
+            : (customHtml || '')
+                .replace(/Hola\s*,?\s*\{\{nombre\}\}\s*,?/gi, cleanName ? `Hola ${cleanName},` : 'Hola,')
+                .replace(/\{\{nombre\}\}/gi, cleanName);
 
           const res = await sendEmail({
             to: lead.email,
