@@ -40,7 +40,7 @@ interface DiagnosisResult {
 }
 
 export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdateConfig }) => {
-  const [subTab, setSubTab] = useState<'chat' | 'conexion' | 'historial'>('chat');
+  const [subTab, setSubTab] = useState<'flujo' | 'chat' | 'conexion'>('flujo');
   
   // API credentials state
   const [apiKey, setApiKey] = useState(config.brevo_api_key || '');
@@ -246,14 +246,21 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
     }
   };
 
-  // Quick preset templates (FÓRMULA 100K Humanized & Anti-Spam)
-  const applyPreset = (preset: 'sistema' | 'software' | 'n8n') => {
-    if (preset === 'sistema') {
+  // Quick preset templates (Iván Sifuentes Academy & Funnel)
+  const applyPreset = (preset: 'bienvenida' | 'recordatorio' | 'software' | 'n8n' | 'oferta_venta' | 'nuevo_modulo', switchToComposer = false) => {
+    if (preset === 'bienvenida') {
       setEmailSubject('No te falta disciplina. Te falta un sistema.');
       setEmailBody(
         'Hola {{nombre}}, te saluda Iván Sifuentes.\n\nTe doy la bienvenida a mi Bóveda de Recursos de IA. Ya tienes tu acceso desbloqueado para probar las primeras herramientas gratuitas.\n\nAhora, si llevas tiempo publicando en redes y sientes que no pasa nada, o llevas semanas sin publicar porque no sabes por dónde arrancar, déjame decirte algo directo:\n\n*No te falta disciplina. Te falta un sistema que trabaje por ti.*\n\nEn mi comunidad privada de **Skool** no te enseñamos teoría genérica. Te entregamos nuestros propios softwares, métodos y automatizaciones reales:\n\n✅ **Software para Windows:** Automatiza Meta.ai, Grok, Whisk e ImageFX en lote.\n✅ **Automatización de Veo3:** Crea videos masivos sin copiar ni pegar prompts.\n✅ **Flujos con N8N:** Genera guion, audio, imágenes y miniaturas 24/7 mientras duermes.\n✅ **Mi Laboratorio de Apps:** Herramientas exclusivas para ahorrarte horas de trabajo.\n✅ **Métodos de Monetización:** Guías probadas para monetizar TikTok en 7 días y nichos virales.\n\nSomos la **Comunidad #1 de creación de contenido y automatización de LATAM** (🏆 *Skool Games Winner con +487 casos de éxito*).\n\nAhora mismo puedes acceder a toda la academia por **solo $14/mes** (antes $10, y muy pronto sube a $19 definitivo).'
       );
       setCtaButtonText('UNIRME A LA COMUNIDAD POR $14');
+      setCtaButtonUrl(config.cta_oferta_url || 'https://www.skool.com/ia-automatiza-7412/about');
+    } else if (preset === 'recordatorio') {
+      setEmailSubject('¿Pudiste probar el Superprompt de personajes?');
+      setEmailBody(
+        'Hola {{nombre}},\n\nAyer te di acceso a la Bóveda con la Fábrica de Imágenes y el Superprompt de personajes.\n\nQuería recordarte que el mayor error de muchos creadores es acumular herramientas y prompts sin probarlos en un proyecto real.\n\n*Solo te toma 2 minutos:*\n1. Abre ChatGPT o Gemini.\n2. Pega tu foto de referencia.\n3. Copia el Superprompt de la Lección 2 de la Bóveda.\n\nEn segundos vas a tener todas las tomas (frente, perfil, 3/4) con el mismo rostro listo para tus videos.\n\nY recuerda: si quieres dar el salto y aprender cómo automatizar la animación y edición de estos personajes para monetizarlos en automático, te espero en nuestra comunidad de Skool por solo $14/mes:'
+      );
+      setCtaButtonText('VER LA COMUNIDAD EN SKOOL');
       setCtaButtonUrl(config.cta_oferta_url || 'https://www.skool.com/ia-automatiza-7412/about');
     } else if (preset === 'software') {
       setEmailSubject('¿Ya probaste el software de automatización para Windows?');
@@ -269,6 +276,25 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
       );
       setCtaButtonText('VER FLUJOS DE N8N EN SKOOL');
       setCtaButtonUrl(config.cta_oferta_url || 'https://www.skool.com/ia-automatiza-7412/about');
+    } else if (preset === 'oferta_venta') {
+      setEmailSubject('🚨 Último aviso: Tu acceso con precio de $14 está por cerrar');
+      setEmailBody(
+        'Hola {{nombre}},\n\nHace una semana te uniste a mi Bóveda de Recursos de IA.\n\nQuiero avisarte con total transparencia:\n\nEl precio de acceso a nuestra academia de **Skool** era de $10. Ahora está en **$14/mes** y muy pronto subirá a **$19/mes** de forma definitiva debido a todo el nuevo software y flujos de automatización que estamos agregando semana a semana.\n\nSi te unes hoy:\n✅ Congelas tu precio en solo $14/mes para siempre.\n✅ Accedes de inmediato a todo el software para Windows, Veo3 y flujos N8N.\n✅ Entras al Laboratorio de Apps donde comparto mis soluciones a medida.\n✅ Obtienes soporte directo y sesiones en vivo conmigo.\n\nNo dejes pasar esta oportunidad antes de que el precio aumente:'
+      );
+      setCtaButtonText('CONGELAR MI PRECIO A $14/MES');
+      setCtaButtonUrl(config.cta_oferta_url || 'https://www.skool.com/ia-automatiza-7412/about');
+    } else if (preset === 'nuevo_modulo') {
+      setEmailSubject('Nuevo recurso disponible en la Bóveda: [Nombre del Módulo]');
+      setEmailBody(
+        'Hola {{nombre}},\n\nTe aviso rápido porque acabo de liberar una nueva actualización en la Bóveda:\n\n**[NOMBRE DEL NUEVO RECURSO O APP]**\n*Nueva herramienta y automatizaciones listas para implementar de inmediato.*\n\nYa puedes entrar a tu panel para probarlo y ver cómo aplicarlo en tus contenidos.\n\nRecuerda que si quieres dominar las automatizaciones a fondo y tener nuestros softwares para Windows y acceso a sesiones en vivo, te espero en la comunidad privada de Skool:'
+      );
+      setCtaButtonText('ACCEDER AL NUEVO RECURSO');
+      setCtaButtonUrl(config.cta_oferta_url || 'https://www.skool.com/ia-automatiza-7412/about');
+    }
+
+    if (switchToComposer) {
+      setSubTab('chat');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -315,6 +341,16 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
         {/* Sub-Navigation Switcher */}
         <div className="flex items-center p-1 bg-gray-100 rounded-xl w-full md:w-auto">
           <button
+            onClick={() => setSubTab('flujo')}
+            className={`flex-1 md:flex-initial px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+              subTab === 'flujo'
+                ? 'bg-white text-gray-900 shadow-xs'
+                : 'text-gray-500 hover:text-gray-800'
+            }`}
+          >
+            ⚡ Flujo Visual & Secuencia
+          </button>
+          <button
             onClick={() => setSubTab('chat')}
             className={`flex-1 md:flex-initial px-4 py-2 rounded-lg text-xs font-bold transition-all ${
               subTab === 'chat'
@@ -322,7 +358,7 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
                 : 'text-gray-500 hover:text-gray-800'
             }`}
           >
-            💬 Chat de Envíos Masivos
+            📝 Redactor & Plantillas
           </button>
           <button
             onClick={() => setSubTab('conexion')}
@@ -332,10 +368,287 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
                 : 'text-gray-500 hover:text-gray-800'
             }`}
           >
-            ⚡ Configuración Vercel / Brevo
+            ⚙️ Conexión Vercel / Brevo
           </button>
         </div>
       </div>
+
+      {/* ========================================================================= */}
+      {/* VISTA 0: FLUJO VISUAL & AUTOMATIZACIÓN DE CORREOS (AUTOPILOT PIPELINE)    */}
+      {/* ========================================================================= */}
+      {subTab === 'flujo' && (
+        <div className="space-y-6">
+          
+          {/* Header Banner */}
+          <div className="bg-gradient-to-r from-gray-900 via-slate-900 to-indigo-950 p-6 rounded-2xl text-white shadow-lg border border-gray-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-extrabold bg-amber-400/20 text-amber-300 border border-amber-400/30 uppercase tracking-widest mb-2">
+                <span>⚡ SECUENCIA AUTÓNOMA 24/7 (VERCEL CRON + BREVO)</span>
+              </div>
+              <h3 className="text-xl font-black text-white">
+                Flujo Automatizado de Nutrición y Ventas
+              </h3>
+              <p className="text-xs text-gray-300 max-w-2xl mt-1 leading-relaxed">
+                Cada prospecto que se registra en la Bóveda ingresa a este embudo cronológico. No tienes que enviar correos a mano: el backend detecta el tiempo transcurrido y despacha cada fase automáticamente con el diseño de lujo.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3 bg-white/10 p-3 rounded-xl border border-white/10">
+              <div className="text-right">
+                <span className="text-[10px] text-gray-400 block uppercase font-bold">Base de Datos</span>
+                <span className="text-sm font-black text-white">{leads.length} Prospectos Listos</span>
+              </div>
+              <button
+                onClick={() => applyPreset('bienvenida', true)}
+                className="px-4 py-2 rounded-lg bg-amber-400 hover:bg-amber-300 text-gray-950 text-xs font-black shadow-md transition-all flex items-center gap-1.5"
+              >
+                <span>Abrir Redactor</span>
+                &rarr;
+              </button>
+            </div>
+          </div>
+
+          {/* Visual Timeline Cards */}
+          <div className="space-y-4 relative before:absolute before:inset-0 before:left-7 md:before:left-9 before:w-0.5 before:bg-gray-200 before:z-0">
+            
+            {/* Step 1: Minuto 0 */}
+            <div className="relative z-10 bg-white p-5 rounded-2xl border border-emerald-200 shadow-xs hover:shadow-md transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-500 text-white font-black text-sm flex items-center justify-center flex-shrink-0 shadow-md shadow-emerald-500/20">
+                  1
+                </div>
+                <div>
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-100 text-emerald-800">
+                      ⏱️ Minuto 0 (Inmediato)
+                    </span>
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-700">
+                      👋 Bienvenida & Entrega
+                    </span>
+                    <span className="text-[11px] font-bold text-emerald-600 flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                      Activo en /api/leads
+                    </span>
+                  </div>
+                  <h4 className="text-base font-black text-gray-900">
+                    No te falta disciplina. Te falta un sistema.
+                  </h4>
+                  <p className="text-xs text-gray-600 mt-1 max-w-2xl leading-relaxed">
+                    Entrega de inmediato las herramientas gratuitas prometidas en la web + Abre la brecha hacia el sistema de automatización y la membresía de Skool por solo $14/mes.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 w-full md:w-auto justify-end">
+                <button
+                  onClick={() => applyPreset('bienvenida', true)}
+                  className="px-3.5 py-2 rounded-xl text-xs font-bold bg-gray-900 hover:bg-black text-white shadow-xs transition-colors flex items-center gap-1"
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                  <span>Ver / Editar Plantilla</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Step 2: Día 1 */}
+            <div className="relative z-10 bg-white p-5 rounded-2xl border border-blue-200 shadow-xs hover:shadow-md transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white font-black text-sm flex items-center justify-center flex-shrink-0 shadow-md shadow-blue-500/20">
+                  2
+                </div>
+                <div>
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-blue-100 text-blue-800">
+                      ⏱️ +24 Horas (Día 1)
+                    </span>
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-700">
+                      ⏰ Recordatorio & Implementación
+                    </span>
+                    <span className="text-[11px] font-bold text-blue-600 flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                      Activo en Vercel Cron
+                    </span>
+                  </div>
+                  <h4 className="text-base font-black text-gray-900">
+                    ¿Pudiste probar el Superprompt de personajes?
+                  </h4>
+                  <p className="text-xs text-gray-600 mt-1 max-w-2xl leading-relaxed">
+                    Guía de 2 minutos para pegar el prompt en ChatGPT y no dejar que el prospecto se enfríe. Conecta la generación con la animación automatizada en Skool.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 w-full md:w-auto justify-end">
+                <button
+                  onClick={() => applyPreset('recordatorio', true)}
+                  className="px-3.5 py-2 rounded-xl text-xs font-bold bg-gray-900 hover:bg-black text-white shadow-xs transition-colors flex items-center gap-1"
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                  <span>Ver / Editar Plantilla</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Step 3: Día 2 */}
+            <div className="relative z-10 bg-white p-5 rounded-2xl border border-amber-200 shadow-xs hover:shadow-md transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500 text-white font-black text-sm flex items-center justify-center flex-shrink-0 shadow-md shadow-amber-500/20">
+                  3
+                </div>
+                <div>
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-100 text-amber-800">
+                      ⏱️ +48 Horas (Día 2)
+                    </span>
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-700">
+                      ⚙️ Herramienta: Software Windows & Veo3
+                    </span>
+                    <span className="text-[11px] font-bold text-amber-600 flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                      Activo en Vercel Cron
+                    </span>
+                  </div>
+                  <h4 className="text-base font-black text-gray-900">
+                    ¿Ya probaste el software de automatización para Windows?
+                  </h4>
+                  <p className="text-xs text-gray-600 mt-1 max-w-2xl leading-relaxed">
+                    Demostración práctica de cómo crear imágenes y videos en Meta.ai, Grok y Veo3 sin copiar prompts a mano. El gancho hacia el software de la Academia.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 w-full md:w-auto justify-end">
+                <button
+                  onClick={() => applyPreset('software', true)}
+                  className="px-3.5 py-2 rounded-xl text-xs font-bold bg-gray-900 hover:bg-black text-white shadow-xs transition-colors flex items-center gap-1"
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                  <span>Ver / Editar Plantilla</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Step 4: Día 4 */}
+            <div className="relative z-10 bg-white p-5 rounded-2xl border border-purple-200 shadow-xs hover:shadow-md transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-purple-600 text-white font-black text-sm flex items-center justify-center flex-shrink-0 shadow-md shadow-purple-500/20">
+                  4
+                </div>
+                <div>
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-purple-100 text-purple-800">
+                      ⏱️ +96 Horas (Día 4)
+                    </span>
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-700">
+                      🚀 Flujos N8N 24/7 en Servidor
+                    </span>
+                    <span className="text-[11px] font-bold text-purple-600 flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-purple-500"></span>
+                      Activo en Vercel Cron
+                    </span>
+                  </div>
+                  <h4 className="text-base font-black text-gray-900">
+                    Cómo generar guion, audio y miniaturas mientras duermes
+                  </h4>
+                  <p className="text-xs text-gray-600 mt-1 max-w-2xl leading-relaxed">
+                    Explica el poder de correr N8N en servidor de alta potencia (64GB RAM) para crear contenido 24/7 sin tocar el ordenador.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 w-full md:w-auto justify-end">
+                <button
+                  onClick={() => applyPreset('n8n', true)}
+                  className="px-3.5 py-2 rounded-xl text-xs font-bold bg-gray-900 hover:bg-black text-white shadow-xs transition-colors flex items-center gap-1"
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                  <span>Ver / Editar Plantilla</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Step 5: Día 7 */}
+            <div className="relative z-10 bg-white p-5 rounded-2xl border border-rose-200 shadow-xs hover:shadow-md transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-rose-600 text-white font-black text-sm flex items-center justify-center flex-shrink-0 shadow-md shadow-rose-500/20">
+                  5
+                </div>
+                <div>
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-rose-100 text-rose-800">
+                      ⏱️ +7 Días (Cierre)
+                    </span>
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-700">
+                      🔥 Oferta de Venta & Urgencia ($14)
+                    </span>
+                    <span className="text-[11px] font-bold text-rose-600 flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-rose-500"></span>
+                      Activo en Vercel Cron
+                    </span>
+                  </div>
+                  <h4 className="text-base font-black text-gray-900">
+                    🚨 Último aviso: Tu acceso con precio de $14 está por cerrar
+                  </h4>
+                  <p className="text-xs text-gray-600 mt-1 max-w-2xl leading-relaxed">
+                    Llamado final a la acción con urgencia real: el precio sube de $14 a $19 definitivo. Congela el precio para siempre.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 w-full md:w-auto justify-end">
+                <button
+                  onClick={() => applyPreset('oferta_venta', true)}
+                  className="px-3.5 py-2 rounded-xl text-xs font-bold bg-gray-900 hover:bg-black text-white shadow-xs transition-colors flex items-center gap-1"
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                  <span>Ver / Editar Plantilla</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Step 6: Dinámico al Publicar Módulo */}
+            <div className="relative z-10 bg-slate-50 p-5 rounded-2xl border border-gray-300 shadow-xs hover:shadow-md transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-slate-800 text-white font-black text-sm flex items-center justify-center flex-shrink-0 shadow-md">
+                  📢
+                </div>
+                <div>
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase bg-slate-200 text-slate-800">
+                      ⚡ Al Publicar en /admin
+                    </span>
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white text-gray-700 border border-gray-200">
+                      📢 Alerta de Nuevo Módulo o App
+                    </span>
+                    <span className="text-[11px] font-bold text-slate-700 flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-slate-600"></span>
+                      Activo en /api/content
+                    </span>
+                  </div>
+                  <h4 className="text-base font-black text-gray-900">
+                    Nuevo recurso disponible en la Bóveda: [Nombre del Módulo]
+                  </h4>
+                  <p className="text-xs text-gray-600 mt-1 max-w-2xl leading-relaxed">
+                    Notifica en automático a toda tu base registrada cada vez que subes una nueva herramienta de tu laboratorio o un nuevo método.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 w-full md:w-auto justify-end">
+                <button
+                  onClick={() => applyPreset('nuevo_modulo', true)}
+                  className="px-3.5 py-2 rounded-xl text-xs font-bold bg-gray-900 hover:bg-black text-white shadow-xs transition-colors flex items-center gap-1"
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                  <span>Ver / Editar Plantilla</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      )}
 
       {/* ========================================================================= */}
       {/* VISTA 1: CHAT & COMPOSITOR DINÁMICO DE ENVÍOS */}
@@ -354,32 +667,53 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
               </p>
             </div>
 
-            {/* Quick Presets (Iván Sifuentes Academy) */}
+            {/* Quick Presets (Iván Sifuentes Academy Sequence) */}
             <div>
               <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-2">
-                Plantillas Oficiales de la Academia:
+                Plantillas de la Secuencia de Automatización:
               </span>
               <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
-                  onClick={() => applyPreset('sistema')}
-                  className="px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100 transition-colors"
+                  onClick={() => applyPreset('bienvenida')}
+                  className="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-900 border border-emerald-200 hover:bg-emerald-100 transition-colors"
                 >
-                  🏆 Sistema Skool ($14)
+                  👋 1. Bienvenida (Min 0)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => applyPreset('recordatorio')}
+                  className="px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-50 text-blue-900 border border-blue-200 hover:bg-blue-100 transition-colors"
+                >
+                  ⏰ 2. Recordatorio (Día 1)
                 </button>
                 <button
                   type="button"
                   onClick={() => applyPreset('software')}
-                  className="px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-50 text-blue-900 border border-blue-200 hover:bg-blue-100 transition-colors"
+                  className="px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100 transition-colors"
                 >
-                  ⚙️ Software Windows & Veo3
+                  ⚙️ 3. Software Windows (Día 2)
                 </button>
                 <button
                   type="button"
                   onClick={() => applyPreset('n8n')}
-                  className="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-900 border border-emerald-200 hover:bg-emerald-100 transition-colors"
+                  className="px-3 py-1.5 rounded-lg text-xs font-bold bg-purple-50 text-purple-900 border border-purple-200 hover:bg-purple-100 transition-colors"
                 >
-                  🚀 Flujos N8N 24/7
+                  🚀 4. Flujos N8N (Día 4)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => applyPreset('oferta_venta')}
+                  className="px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-50 text-rose-900 border border-rose-200 hover:bg-rose-100 transition-colors"
+                >
+                  🔥 5. Oferta Venta (Día 7)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => applyPreset('nuevo_modulo')}
+                  className="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-800 border border-slate-300 hover:bg-slate-200 transition-colors"
+                >
+                  📢 6. Nuevo Recurso
                 </button>
               </div>
             </div>
