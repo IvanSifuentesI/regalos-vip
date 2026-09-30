@@ -72,21 +72,20 @@ export async function POST(req: Request) {
       },
     });
 
-    // Automatically trigger Welcome Email and WhatsApp Webhook in the background
+    // Automatically trigger Welcome Email and WhatsApp Webhook
     try {
       const config = await getConfig();
       
-      // 1. Send Welcome Email
-      sendWelcomeEmail(savedLead, config).catch(err => 
-        console.warn('Background welcome email error:', err)
-      );
+      // 1. Send Welcome Email (AWAIT REQUIRED: Vercel serverless functions terminate if not awaited)
+      const emailResult = await sendWelcomeEmail(savedLead, config);
+      console.log(`[WELCOME EMAIL RESULT] To: ${savedLead.email} | Mode: ${emailResult.mode} | Success: ${emailResult.success}`);
 
       // 2. Trigger WhatsApp Webhook (if configured)
-      triggerWhatsAppWebhook({ lead: savedLead, config }).catch(err => 
-        console.warn('Background whatsapp webhook error:', err)
-      );
-    } catch (e) {
-      console.warn('Automation trigger error:', e);
+      if (config.whatsapp_webhook_url) {
+        await triggerWhatsAppWebhook({ lead: savedLead, config });
+      }
+    } catch (e: any) {
+      console.warn('Automation trigger error:', e.message);
     }
 
     return NextResponse.json({ success: true, lead: savedLead }, { status: 201 });
