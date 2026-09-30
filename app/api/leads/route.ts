@@ -80,6 +80,14 @@ export async function POST(req: Request) {
       const emailResult = await sendWelcomeEmail(savedLead, config);
       console.log(`[WELCOME EMAIL RESULT] To: ${savedLead.email} | Mode: ${emailResult.mode} | Success: ${emailResult.success}`);
 
+      if (emailResult.success) {
+        const { recordLeadSequenceStage } = await import('@/lib/db');
+        await recordLeadSequenceStage(savedLead.id, 'bienvenida', {
+          log_id: emailResult.id,
+          timestamp: new Date().toISOString(),
+        });
+      }
+
       // 2. Trigger WhatsApp Webhook (if configured)
       if (config.whatsapp_webhook_url) {
         await triggerWhatsAppWebhook({ lead: savedLead, config });

@@ -606,6 +606,45 @@ Recuerda que si quieres dominar las automatizaciones a fondo, tener nuestros sof
 }
 
 /**
+ * 2. Email de Seguimiento Día 1: Superprompt de Personajes
+ */
+export async function sendFollowUpDay1Email(lead: Lead, config?: ClassroomConfig) {
+  const skoolUrl = config?.cta_oferta_url || 'https://www.skool.com/ia-automatiza-7412/about';
+  const subject = `¿Pudiste probar el Superprompt de personajes?`;
+  const headline = `Crea personajes consistentes en menos de 2 minutos.`;
+
+  const bodyContent = `Hola,
+
+Ayer te di acceso a la Bóveda con la Fábrica de Imágenes y el Superprompt de personajes.
+
+Quería recordarte que el mayor error de muchos creadores es acumular herramientas y prompts sin probarlos en un proyecto real.
+
+*Solo te toma 2 minutos:*
+1. Abre ChatGPT o Gemini.
+2. Pega tu foto de referencia.
+3. Copia el Superprompt de la Lección 2 de la Bóveda.
+
+En segundos vas a tener todas las tomas (frente, perfil, 3/4) con el mismo rostro listo para tus videos.
+
+Y recuerda: si quieres dar el salto y aprender cómo automatizar la animación y edición de estos personajes para monetizarlos en automático, te espero en nuestra comunidad de Skool por solo $14/mes:`;
+
+  const html = buildBrandedEmailHtml({
+    title: subject,
+    headline,
+    badge: '• SEGUIMIENTO — DÍA 1 •',
+    bodyContent,
+    ctaText: 'VER LA COMUNIDAD EN SKOOL',
+    ctaUrl: skoolUrl,
+    subtitleUnderCta: 'Aprende los métodos para dar vida a personajes con IA.',
+    communityUrl: config?.whatsapp_comunidad_url,
+    brandName: 'Iván Sifuentes',
+    recipientEmail: lead.email,
+  });
+
+  return sendEmail({ to: lead.email, subject, html, type: 'calentamiento', config });
+}
+
+/**
  * 3. Email de Seguimiento Día 2: Software de Automatización y N8N
  */
 export async function sendFollowUpDay2Email(lead: Lead, config?: ClassroomConfig) {
@@ -639,6 +678,109 @@ Te veo dentro de nuestra comunidad en Skool. Recuerda que el acceso aún está a
   });
 
   return sendEmail({ to: lead.email, subject, html, type: 'calentamiento', config });
+}
+
+/**
+ * 4. Email de Seguimiento Día 4: Flujos de N8N en la Nube
+ */
+export async function sendFollowUpDay4Email(lead: Lead, config?: ClassroomConfig) {
+  const skoolUrl = config?.cta_oferta_url || 'https://www.skool.com/ia-automatiza-7412/about';
+  const subject = `Cómo generar guion, audio y miniaturas mientras duermes`;
+  const headline = `Producción de contenido 24/7 con N8N y Automatizaciones.`;
+
+  const bodyContent = `Hola,
+
+La verdadera libertad de un creador llega cuando el contenido se produce 24/7 en automático.
+
+En la academia te enseño a dominar **N8N desde Cero a Intermedio** con scripts avanzados que crean:
+
+• Guion optimizado con SEO
+• Generación de audios por escenas con Elevenlabs
+• Miniaturas de alto impacto automáticas
+• Publicación y edición en lotes
+
+Incluso tienes la opción de correr n8n directamente en mi servidor de alta potencia (64GB RAM, 12 CPU) para que no dependas de tu computadora ni gastes recursos locales.
+
+Todo esto está incluido en la membresía de Skool por solo $14/mes antes de que suba a $19 definitivo:`;
+
+  const html = buildBrandedEmailHtml({
+    title: subject,
+    headline,
+    badge: '• SEGUIMIENTO — N8N DÍA 4 •',
+    bodyContent,
+    ctaText: 'VER FLUJOS DE N8N EN SKOOL',
+    ctaUrl: skoolUrl,
+    subtitleUnderCta: 'Automatiza tus canales y ahorra más de 20 horas a la semana.',
+    communityUrl: config?.whatsapp_comunidad_url,
+    brandName: 'Iván Sifuentes',
+    recipientEmail: lead.email,
+  });
+
+  return sendEmail({ to: lead.email, subject, html, type: 'calentamiento', config });
+}
+
+/**
+ * 5. Email de Seguimiento Día 7: Oferta de Venta Skool
+ */
+export async function sendFollowUpDay7Email(lead: Lead, config?: ClassroomConfig) {
+  const skoolUrl = config?.cta_oferta_url || 'https://www.skool.com/ia-automatiza-7412/about';
+  const subject = `🚨 Último aviso: Tu acceso con precio de $14 está por cerrar`;
+  const headline = `Congela tu precio de $14/mes antes del incremento a $19.`;
+
+  const bodyContent = `Hola,
+
+Hace una semana te uniste a mi Bóveda de Recursos de IA.
+
+Quiero avisarte con total transparencia:
+
+El precio de acceso a nuestra academia de **Skool** era de $10. Ahora está en **$14/mes** y muy pronto subirá a **$19/mes** de forma definitiva debido a todo el nuevo software y flujos de automatización que estamos agregando semana a semana.
+
+Si te unes hoy:
+✅ Congelas tu precio en solo $14/mes para siempre.
+✅ Accedes de inmediato a todo el software para Windows, Veo3 y flujos N8N.
+✅ Entras al Laboratorio de Apps donde comparto mis soluciones a medida.
+✅ Obtienes soporte directo y sesiones en vivo conmigo.
+
+No dejes pasar esta oportunidad antes de que el precio aumente:`;
+
+  const html = buildBrandedEmailHtml({
+    title: subject,
+    headline,
+    badge: '• ÚLTIMA OPORTUNIDAD •',
+    bodyContent,
+    ctaText: 'CONGELAR MI PRECIO A $14/MES',
+    ctaUrl: skoolUrl,
+    subtitleUnderCta: '🚨 Garantizado: este precio jamás volverá a repetirse.',
+    communityUrl: config?.whatsapp_comunidad_url,
+    brandName: 'Iván Sifuentes',
+    recipientEmail: lead.email,
+  });
+
+  return sendEmail({ to: lead.email, subject, html, type: 'calentamiento', config });
+}
+
+/**
+ * Despachador universal de la secuencia cronológica
+ */
+export async function sendSequenceEmailForStage(
+  stage: 'bienvenida' | 'dia_1' | 'dia_2' | 'dia_4' | 'dia_7',
+  lead: Lead,
+  config?: ClassroomConfig
+) {
+  switch (stage) {
+    case 'bienvenida':
+      return sendWelcomeEmail(lead, config);
+    case 'dia_1':
+      return sendFollowUpDay1Email(lead, config);
+    case 'dia_2':
+      return sendFollowUpDay2Email(lead, config);
+    case 'dia_4':
+      return sendFollowUpDay4Email(lead, config);
+    case 'dia_7':
+      return sendFollowUpDay7Email(lead, config);
+    default:
+      throw new Error(`Etapa de secuencia no reconocida: ${stage}`);
+  }
 }
 
 /**

@@ -73,6 +73,104 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
   // Email history logs
   const [historyLogs, setHistoryLogs] = useState<any[]>([]);
 
+  // Sequence & Autopilot Audit State
+  const [auditData, setAuditData] = useState<any>(null);
+  const [isLoadingAudit, setIsLoadingAudit] = useState(false);
+  const [isRunningAutopilot, setIsRunningAutopilot] = useState(false);
+  const [leadSearchTerm, setLeadSearchTerm] = useState('');
+  const [autopilotMessage, setAutopilotMessage] = useState<string | null>(null);
+
+  // Fetch live audit data from database
+  const fetchAuditData = async () => {
+    setIsLoadingAudit(true);
+    try {
+      const res = await fetch('/api/cron/sequence', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'get_audit' }),
+      });
+      const data = await res.json();
+      if (data.success && data.audit) {
+        setAuditData(data.audit);
+      }
+    } catch (e) {
+      console.warn('Error fetching sequence audit:', e);
+    } finally {
+      setIsLoadingAudit(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAuditData();
+  }, []);
+
+  // Execute sequence cycle right now
+  const handleRunAutopilotNow = async () => {
+    setIsRunningAutopilot(true);
+    setAutopilotMessage(null);
+    try {
+      const res = await fetch('/api/cron/sequence', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'run_now' }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setAuditData(data.audit);
+        setAutopilotMessage(`✅ ${data.message || 'Secuencia ejecutada exitosamente.'}`);
+      } else {
+        setAutopilotMessage(`❌ Error al ejecutar: ${data.error || 'Fallo desconocido'}`);
+      }
+    } catch (e: any) {
+      setAutopilotMessage(`❌ Error de red: ${e.message}`);
+    } finally {
+      setIsRunningAutopilot(false);
+    }
+  };
+
+  // Mark all current leads as welcome email completed
+  const handleMarkAllWelcomeSent = async () => {
+    if (!confirm('¿Confirmas sincronizar y marcar el correo de Bienvenida como ya enviado a todos tus prospectos registrados?')) return;
+    setIsRunningAutopilot(true);
+    try {
+      const res = await fetch('/api/cron/sequence', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'mark_welcome_sent_all' }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setAuditData(data.audit);
+        setAutopilotMessage(`✅ ${data.message}`);
+      }
+    } catch (e: any) {
+      alert(`Error: ${e.message}`);
+    } finally {
+      setIsRunningAutopilot(false);
+    }
+  };
+
+  // Send a specific stage to a single lead
+  const handleSendLeadStage = async (leadId: string, stageId: string, email: string) => {
+    if (!confirm(`¿Confirmas enviar de inmediato el correo de la etapa '${stageId}' a ${email}?`)) return;
+    try {
+      const res = await fetch('/api/cron/sequence', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'send_lead_stage', leadId, stageId }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setAuditData(data.audit);
+        alert(`✅ Correo de la etapa '${stageId}' enviado a ${email}`);
+      } else {
+        alert(`❌ Error al enviar: ${data.error || 'Revisa la conexión de Brevo'}`);
+      }
+    } catch (e: any) {
+      alert(`Error de red: ${e.message}`);
+    }
+  };
+
   // Load local storage cache on mount
   useEffect(() => {
     const cachedKey = localStorage.getItem('brevo_api_key');
@@ -382,32 +480,293 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
       {subTab === 'flujo' && (
         <div className="space-y-6">
           
-          {/* Header Banner */}
-          <div className="bg-gradient-to-r from-gray-900 via-slate-900 to-indigo-950 p-6 rounded-2xl text-white shadow-lg border border-gray-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-extrabold bg-amber-400/20 text-amber-300 border border-amber-400/30 uppercase tracking-widest mb-2">
-                <span>⚡ SECUENCIA AUTÓNOMA 24/7 (VERCEL CRON + BREVO)</span>
+          {/* Header Banner & Live Autopilot Controller */}
+          <div className="bg-gradient-to-r from-gray-900 via-slate-900 to-indigo-950 p-6 rounded-2xl text-white shadow-lg border border-gray-800 space-y-4">
+            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+              <div>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-400/20 text-emerald-300 border border-emerald-400/30 uppercase tracking-widest mb-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <span>⚡ MOTOR AUTÓNOMO ACTIVO 24/7 (VERCEL CRON + SUPABASE)</span>
+                </div>
+                <h3 className="text-xl font-black text-white">
+                  Centro de Control de Automatizaciones & Checklist en Vivo
+                </h3>
+                <p className="text-xs text-gray-300 max-w-2xl mt-1 leading-relaxed">
+                  El sistema detecta automáticamente la fecha y hora de registro de cada prospecto y despacha cada correo de forma cronológica (Minuto 0, Día 1, Día 2, Día 4 y Día 7) sin que tengas que hacerlo manualmente.
+                </p>
               </div>
-              <h3 className="text-xl font-black text-white">
-                Flujo Automatizado de Nutrición y Ventas
-              </h3>
-              <p className="text-xs text-gray-300 max-w-2xl mt-1 leading-relaxed">
-                Cada prospecto que se registra en la Bóveda ingresa a este embudo cronológico. No tienes que enviar correos a mano: el backend detecta el tiempo transcurrido y despacha cada fase automáticamente con el diseño de lujo.
-              </p>
+
+              {/* Action Buttons */}
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  disabled={isRunningAutopilot || isLoadingAudit}
+                  onClick={handleRunAutopilotNow}
+                  className="px-4 py-2.5 rounded-xl font-black text-xs bg-amber-400 hover:bg-amber-300 text-gray-950 shadow-md transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                >
+                  <Zap className={`w-4 h-4 ${isRunningAutopilot ? 'animate-spin' : ''}`} />
+                  <span>{isRunningAutopilot ? 'Procesando ciclo...' : '⚡ Ejecutar Ciclo Ahora'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  disabled={isLoadingAudit}
+                  onClick={fetchAuditData}
+                  className="px-3 py-2.5 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white border border-white/10 transition-colors flex items-center gap-1.5 cursor-pointer"
+                  title="Actualizar datos desde la base de datos"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${isLoadingAudit ? 'animate-spin' : ''}`} />
+                  <span>Actualizar</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleMarkAllWelcomeSent}
+                  className="px-3 py-2.5 rounded-xl text-xs font-bold bg-emerald-950/60 hover:bg-emerald-900/80 text-emerald-300 border border-emerald-500/30 transition-colors flex items-center gap-1.5 cursor-pointer"
+                  title="Marca la Bienvenida como ya completada para prospectos existentes"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>Sincronizar Bienvenida</span>
+                </button>
+              </div>
             </div>
 
-            <div className="flex items-center gap-3 bg-white/10 p-3 rounded-xl border border-white/10">
-              <div className="text-right">
-                <span className="text-[10px] text-gray-400 block uppercase font-bold">Base de Datos</span>
-                <span className="text-sm font-black text-white">{leads.length} Prospectos Listos</span>
+            {/* Notification alert if any action was performed */}
+            {autopilotMessage && (
+              <div className="p-3 bg-white/10 border border-white/20 rounded-xl text-xs font-medium text-white flex items-center justify-between">
+                <span>{autopilotMessage}</span>
+                <button onClick={() => setAutopilotMessage(null)} className="text-gray-400 hover:text-white">&times;</button>
               </div>
-              <button
-                onClick={() => applyPreset('bienvenida', true)}
-                className="px-4 py-2 rounded-lg bg-amber-400 hover:bg-amber-300 text-gray-950 text-xs font-black shadow-md transition-all flex items-center gap-1.5"
-              >
-                <span>Abrir Redactor</span>
-                &rarr;
-              </button>
+            )}
+
+            {/* Global Sequence Progress Stats */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 pt-2 border-t border-gray-800">
+              <div className="bg-white/5 p-3 rounded-xl border border-white/5">
+                <span className="text-[10px] text-emerald-400 uppercase font-black block">1. Bienvenida (0h)</span>
+                <div className="text-base font-black text-white mt-0.5">
+                  {auditData?.etapas?.bienvenida?.completados ?? leads.length} <span className="text-[11px] text-gray-400 font-normal">enviados</span>
+                </div>
+                <span className="text-[10px] text-emerald-500 font-semibold block mt-0.5">✓ 100% Entregado</span>
+              </div>
+
+              <div className="bg-white/5 p-3 rounded-xl border border-white/5">
+                <span className="text-[10px] text-blue-400 uppercase font-black block">2. Superprompt (24h)</span>
+                <div className="text-base font-black text-white mt-0.5">
+                  {auditData?.etapas?.dia_1?.completados ?? 0} <span className="text-[11px] text-gray-400 font-normal">enviados</span>
+                </div>
+                <span className="text-[10px] text-blue-300 font-semibold block mt-0.5">
+                  {auditData?.etapas?.dia_1?.listos ? `⚡ ${auditData.etapas.dia_1.listos} listos` : `⏳ ${auditData?.etapas?.dia_1?.enCola ?? 0} en cola`}
+                </span>
+              </div>
+
+              <div className="bg-white/5 p-3 rounded-xl border border-white/5">
+                <span className="text-[10px] text-amber-400 uppercase font-black block">3. Software (48h)</span>
+                <div className="text-base font-black text-white mt-0.5">
+                  {auditData?.etapas?.dia_2?.completados ?? 0} <span className="text-[11px] text-gray-400 font-normal">enviados</span>
+                </div>
+                <span className="text-[10px] text-amber-300 font-semibold block mt-0.5">
+                  {auditData?.etapas?.dia_2?.listos ? `⚡ ${auditData.etapas.dia_2.listos} listos` : `⏳ ${auditData?.etapas?.dia_2?.enCola ?? 0} en cola`}
+                </span>
+              </div>
+
+              <div className="bg-white/5 p-3 rounded-xl border border-white/5">
+                <span className="text-[10px] text-purple-400 uppercase font-black block">4. N8N Cloud (96h)</span>
+                <div className="text-base font-black text-white mt-0.5">
+                  {auditData?.etapas?.dia_4?.completados ?? 0} <span className="text-[11px] text-gray-400 font-normal">enviados</span>
+                </div>
+                <span className="text-[10px] text-purple-300 font-semibold block mt-0.5">
+                  {auditData?.etapas?.dia_4?.listos ? `⚡ ${auditData.etapas.dia_4.listos} listos` : `⏳ ${auditData?.etapas?.dia_4?.enCola ?? 0} en cola`}
+                </span>
+              </div>
+
+              <div className="bg-white/5 p-3 rounded-xl border border-white/5">
+                <span className="text-[10px] text-rose-400 uppercase font-black block">5. Oferta $14 (168h)</span>
+                <div className="text-base font-black text-white mt-0.5">
+                  {auditData?.etapas?.dia_7?.completados ?? 0} <span className="text-[11px] text-gray-400 font-normal">enviados</span>
+                </div>
+                <span className="text-[10px] text-rose-300 font-semibold block mt-0.5">
+                  {auditData?.etapas?.dia_7?.listos ? `⚡ ${auditData.etapas.dia_7.listos} listos` : `⏳ ${auditData?.etapas?.dia_7?.enCola ?? 0} en cola`}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* AUDIT CHECKLIST TABLE: Detalle Individual por Prospecto */}
+          <div className="bg-white p-5 rounded-2xl border border-gray-200 shadow-xs space-y-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div>
+                <h4 className="text-base font-black text-gray-900 flex items-center gap-2">
+                  <UserCheck className="w-5 h-5 text-indigo-600" />
+                  <span>Checklist & Auditoría Individual por Prospecto</span>
+                </h4>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Supervisa en tiempo real qué correos ya recibió cada prospecto y cuáles están en cola esperando sus 24h, 48h o 7 días.
+                </p>
+              </div>
+
+              <div className="w-full sm:w-64">
+                <input
+                  type="text"
+                  value={leadSearchTerm}
+                  onChange={(e) => setLeadSearchTerm(e.target.value)}
+                  placeholder="Filtrar por correo..."
+                  className="w-full px-3 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-amber-500 focus:bg-white"
+                />
+              </div>
+            </div>
+
+            {/* Leads Table */}
+            <div className="overflow-x-auto rounded-xl border border-gray-100 max-h-[380px] overflow-y-auto">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead className="sticky top-0 bg-gray-50 border-b border-gray-200 z-10">
+                  <tr className="text-gray-600 font-bold uppercase text-[10px] tracking-wider">
+                    <th className="py-2.5 px-3">Prospecto</th>
+                    <th className="py-2.5 px-3 text-center">1. Bienvenida (0h)</th>
+                    <th className="py-2.5 px-3 text-center">2. Superprompt (24h)</th>
+                    <th className="py-2.5 px-3 text-center">3. Software (48h)</th>
+                    <th className="py-2.5 px-3 text-center">4. N8N (96h)</th>
+                    <th className="py-2.5 px-3 text-center">5. Oferta (168h)</th>
+                    <th className="py-2.5 px-3 text-right">Acción</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {((auditData?.items || []).filter((item: any) => 
+                    !leadSearchTerm || item.email?.toLowerCase().includes(leadSearchTerm.toLowerCase())
+                  )).slice(0, 50).map((item: any) => {
+                    const daysAgo = Math.floor(item.horasDesdeRegistro / 24);
+                    const hoursAgoRemainder = Math.floor(item.horasDesdeRegistro % 24);
+                    const timeLabel = daysAgo > 0 ? `Hace ${daysAgo}d ${hoursAgoRemainder}h` : `Hace ${hoursAgoRemainder}h`;
+
+                    return (
+                      <tr key={item.id} className="hover:bg-gray-50/80 transition-colors">
+                        <td className="py-2.5 px-3">
+                          <span className="font-bold text-gray-900 block truncate max-w-[200px]" title={item.email}>
+                            {item.email}
+                          </span>
+                          <span className="text-[10px] text-gray-500 flex items-center gap-1">
+                            <Clock className="w-3 h-3 text-gray-400" />
+                            {timeLabel}
+                          </span>
+                        </td>
+
+                        {/* Bienvenida */}
+                        <td className="py-2.5 px-3 text-center">
+                          {item.stages?.bienvenida?.status === 'enviado' ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800">
+                              <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                              Enviado
+                            </span>
+                          ) : (
+                            <button
+                              onClick={() => handleSendLeadStage(item.id, 'bienvenida', item.email)}
+                              className="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-900 hover:bg-amber-200 transition-colors"
+                            >
+                              ⚡ Enviar
+                            </button>
+                          )}
+                        </td>
+
+                        {/* Dia 1 */}
+                        <td className="py-2.5 px-3 text-center">
+                          {item.stages?.dia_1?.status === 'enviado' ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800">
+                              <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                              Enviado
+                            </span>
+                          ) : item.stages?.dia_1?.status === 'listo_para_enviar' ? (
+                            <button
+                              onClick={() => handleSendLeadStage(item.id, 'dia_1', item.email)}
+                              className="px-2 py-0.5 rounded-full text-[10px] font-black bg-blue-100 text-blue-900 hover:bg-blue-200 transition-colors animate-pulse"
+                            >
+                              ⚡ Listo
+                            </button>
+                          ) : (
+                            <span className="text-[10px] text-gray-400 font-medium">
+                              ⏳ Falta {item.stages?.dia_1?.horasFaltantes}h
+                            </span>
+                          )}
+                        </td>
+
+                        {/* Dia 2 */}
+                        <td className="py-2.5 px-3 text-center">
+                          {item.stages?.dia_2?.status === 'enviado' ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800">
+                              <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                              Enviado
+                            </span>
+                          ) : item.stages?.dia_2?.status === 'listo_para_enviar' ? (
+                            <button
+                              onClick={() => handleSendLeadStage(item.id, 'dia_2', item.email)}
+                              className="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-900 hover:bg-amber-200 transition-colors animate-pulse"
+                            >
+                              ⚡ Listo
+                            </button>
+                          ) : (
+                            <span className="text-[10px] text-gray-400 font-medium">
+                              ⏳ Falta {item.stages?.dia_2?.horasFaltantes}h
+                            </span>
+                          )}
+                        </td>
+
+                        {/* Dia 4 */}
+                        <td className="py-2.5 px-3 text-center">
+                          {item.stages?.dia_4?.status === 'enviado' ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800">
+                              <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                              Enviado
+                            </span>
+                          ) : item.stages?.dia_4?.status === 'listo_para_enviar' ? (
+                            <button
+                              onClick={() => handleSendLeadStage(item.id, 'dia_4', item.email)}
+                              className="px-2 py-0.5 rounded-full text-[10px] font-black bg-purple-100 text-purple-900 hover:bg-purple-200 transition-colors animate-pulse"
+                            >
+                              ⚡ Listo
+                            </button>
+                          ) : (
+                            <span className="text-[10px] text-gray-400 font-medium">
+                              ⏳ Falta {item.stages?.dia_4?.horasFaltantes}h
+                            </span>
+                          )}
+                        </td>
+
+                        {/* Dia 7 */}
+                        <td className="py-2.5 px-3 text-center">
+                          {item.stages?.dia_7?.status === 'enviado' ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800">
+                              <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                              Enviado
+                            </span>
+                          ) : item.stages?.dia_7?.status === 'listo_para_enviar' ? (
+                            <button
+                              onClick={() => handleSendLeadStage(item.id, 'dia_7', item.email)}
+                              className="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-100 text-rose-900 hover:bg-rose-200 transition-colors animate-pulse"
+                            >
+                              ⚡ Listo
+                            </button>
+                          ) : (
+                            <span className="text-[10px] text-gray-400 font-medium">
+                              ⏳ Falta {item.stages?.dia_7?.horasFaltantes}h
+                            </span>
+                          )}
+                        </td>
+
+                        {/* Quick Trigger */}
+                        <td className="py-2.5 px-3 text-right">
+                          <button
+                            onClick={() => {
+                              setTestEmailTo(item.email);
+                              setSubTab('chat');
+                            }}
+                            className="px-2 py-1 text-[10px] font-bold text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                          >
+                            Abrir redactor
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           </div>
 

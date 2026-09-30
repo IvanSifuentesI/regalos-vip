@@ -306,3 +306,56 @@ export async function verifyAdminInSupabase(email: string, pass: string): Promis
 
   return false;
 }
+
+// --- SECUENCIA DE AUTOMATIZACIÓN DE CORREOS ---
+
+export async function recordLeadSequenceStage(
+  leadId: string,
+  stage: 'bienvenida' | 'dia_1' | 'dia_2' | 'dia_4' | 'dia_7',
+  details?: { log_id?: string; timestamp?: string }
+): Promise<boolean> {
+  const timestamp = details?.timestamp || new Date().toISOString();
+  
+  if (isSupabaseAdminConfigured && supabaseAdmin) {
+    try {
+      const { data } = await supabaseAdmin.from('leads').select('metadata').eq('id', leadId).single();
+      const currentMeta = (data?.metadata as Record<string, any>) || {};
+      const sequence = currentMeta.sequence || {};
+      sequence[stage] = {
+        enviado: true,
+        fecha: timestamp,
+        log_id: details?.log_id || 'ok',
+      };
+      const updatedMeta = { ...currentMeta, sequence };
+      const { error } = await supabaseAdmin.from('leads').update({ metadata: updatedMeta }).eq('id', leadId);
+      return !error;
+    } catch (e) {
+      console.warn('Error recording sequence stage in Supabase:', e);
+      return false;
+    }
+  }
+
+  // Fallback to memory
+  const lead = memoryLeads.find(l => l.id === leadId);
+  if (lead) {
+    if (!lead.metadata) lead.metadata = {};
+    if (!lead.metadata.sequence) lead.metadata.sequence = {};
+    lead.metadata.sequence[stage] = { enviado: true, fecha: timestamp, log_id: details?.log_id || 'ok' };
+    return true;
+  }
+  return false;
+}
+
+export async function markAllLeadsWelcomeSent(): Promise<number> {
+  const leads = await getLeads();
+  let count = 0;
+  const now = new Date().toISOString();
+  for (const lead of leads) {
+    const seq = lead.metadata?.sequence || {};
+    if (!seq.bienvenida?.enviado) {
+      await recordLeadSequenceStage(lead.id, 'bienvenida', { timestamp: now, log_id: 'manual_broadcast_batch' });
+      count++;
+    }
+  }
+  return count;
+}
