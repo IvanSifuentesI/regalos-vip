@@ -397,9 +397,9 @@ export function buildBrandedEmailHtml({
       <div style="margin-top: 36px; padding-top: 24px; border-top: 1px solid #252530;">
         <p style="margin: 0 0 8px 0; font-size: 13px; color: #94a3b8; font-style: italic;">Te veo dentro.</p>
         <p style="margin: 0; font-size: 16px; font-weight: 700; color: #ffffff;">${brandName}</p>
-        <p style="margin: 3px 0 6px 0; font-size: 13px; font-weight: 700; color: #fbbf24;">Bóveda de Inteligencia Artificial</p>
+        <p style="margin: 3px 0 6px 0; font-size: 13px; font-weight: 700; color: #fbbf24;">Comunidad de Automatización & Monetización IA</p>
         <p style="margin: 0; font-size: 12px; color: #64748b;">
-          🏆 Mentor de Automatizaciones & Flujos con IA &middot; Skool
+          🏆 Skool Games Winner en Dinero &middot; +487 Casos de Éxito en LATAM
         </p>
       </div>
 
@@ -420,41 +420,45 @@ export function buildBrandedEmailHtml({
 
 /**
  * 1. Email de Bienvenida Inmediato (apenas se inscribe el lead)
- * Enfoque Divisual Dark Luxe + FÓRMULA 100K
+ * Enfoque Real Iván Sifuentes: Sistemas, Software de Windows, N8N, Métodos y Skool Games
  */
 export async function sendWelcomeEmail(lead: Lead, config?: ClassroomConfig) {
   const skoolUrl = config?.cta_oferta_url || 'https://www.skool.com/ia-automatiza-7412/about';
   const communityUrl = config?.whatsapp_comunidad_url || 'https://chat.whatsapp.com/LpfNzr7ZWh8KXyWvlBklQl';
   const brandName = 'Iván Sifuentes';
 
-  const subject = `Bienvenido a la Bóveda de IA.`;
-  const headline = `Bienvenido a los recursos de IA de Iván Sifuentes.`;
+  const subject = `No te falta disciplina. Te falta un sistema.`;
+  const headline = `Bienvenido a la Bóveda de Recursos y Automatizaciones IA.`;
 
-  const bodyContent = `Hola ${lead.nombre}, te doy la bienvenida.
+  const bodyContent = `Hola ${lead.nombre}, te saluda Iván Sifuentes.
 
-Ya tienes tu acceso desbloqueado a las herramientas gratuitas, la Fábrica de Imágenes y los Superprompts para crear personajes consistentes.
+Te doy la bienvenida a mi Bóveda de Recursos de IA. Ya tienes tu acceso desbloqueado para probar las primeras herramientas gratuitas.
 
-*Pruébalos hoy mismo. Te van a ahorrar días enteros de trabajo.*
+Ahora, si llevas tiempo publicando en redes y sientes que no pasa nada, o llevas semanas sin publicar porque no sabes por dónde arrancar, déjame decirte algo directo:
 
-Pero quiero ser completamente honesto contigo:
+*No te falta disciplina. Te falta un sistema que trabaje por ti.*
 
-Las herramientas gratuitas son solo el primer paso. El verdadero salto ocurre cuando dejas de usar la IA como un simple juguete y comienzas a **automatizar sistemas completos que generan ingresos y escalan tu contenido**.
+En mi comunidad privada de **Skool** no te enseñamos teoría genérica. Te entregamos **nuestros propios softwares, métodos y automatizaciones reales**:
 
-Por eso creé un espacio privado y avanzado:
+✅ **Software para Windows:** Automatiza Meta.ai, Grok, Whisk e ImageFX para crear imágenes y videos en lote sin copiar prompts a mano.
+✅ **Automatización de Veo3:** Olvídate del copia y pega; genera escenas masivas con un solo clic.
+✅ **Flujos con N8N:** Crea guion, audio, imágenes y miniaturas 24/7 en automático mientras duermes.
+✅ **Mi Laboratorio de Apps:** Herramientas exclusivas que desarrollo a medida para ahorrarte horas de trabajo.
+✅ **Métodos de Monetización:** Guías probadas para monetizar TikTok en 7 días y detectar nichos virales garantizados.
 
-Nuestra comunidad oficial en **Skool**.
+Somos la **Comunidad #1 de creación de contenido y automatización de LATAM** (🏆 *Skool Games Winner con +487 casos de éxito*).
 
-Allí encuentras los flujos de trabajo premium, herramientas sin restricciones, acompañamiento directo y las estrategias exactas que no comparto en abierto.`;
+Ahora mismo puedes acceder a toda la academia por **solo $14/mes** (antes $10, y muy pronto sube a $19 definitivo).`;
 
   const html = buildBrandedEmailHtml({
     title: subject,
     headline,
-    badge: '• BÓVEDA IA — ACCESO EXCLUSIVO •',
+    badge: '• BÓVEDA IA & AUTOMATIZACIONES •',
     name: lead.nombre,
     bodyContent,
-    ctaText: 'VER LA COMUNIDAD EN SKOOL',
+    ctaText: 'UNIRME A LA COMUNIDAD POR $14',
     ctaUrl: skoolUrl,
-    subtitleUnderCta: 'Estás a tiempo de llevar tus proyectos al siguiente nivel.',
+    subtitleUnderCta: '🚨 Aprovecha antes de que el precio suba a $19 definitivo.',
     communityUrl,
     brandName,
     recipientEmail: lead.email,
@@ -487,11 +491,11 @@ export async function sendContentUpdateEmail({
 Te aviso rápido porque acabo de liberar un nuevo recurso en la Bóveda:
 
 **${moduleTitle}**
-*${moduleDesc || 'Nueva herramienta y prompts listos para implementar de inmediato.'}*
+*${moduleDesc || 'Nueva herramienta y automatizaciones listas para implementar de inmediato.'}*
 
 Ya puedes entrar a tu panel para probarlo y ver cómo aplicarlo en tus contenidos.
 
-Recuerda que si quieres dominar las automatizaciones a fondo y tener acceso a nuestras sesiones en vivo y plantillas premium, te espero en la comunidad privada de Skool.`;
+Recuerda que si quieres dominar las automatizaciones a fondo, tener nuestros softwares para Windows y acceso a sesiones en vivo, te espero en la comunidad privada de Skool.`;
 
   const html = buildBrandedEmailHtml({
     title: subject,
@@ -511,32 +515,32 @@ Recuerda que si quieres dominar las automatizaciones a fondo y tener acceso a nu
 }
 
 /**
- * 3. Email de Seguimiento Día 2: "¿Ya probaste la Fábrica de Imágenes IA?"
+ * 3. Email de Seguimiento Día 2: Software de Automatización y N8N
  */
 export async function sendFollowUpDay2Email(lead: Lead, config?: ClassroomConfig) {
   const skoolUrl = config?.cta_oferta_url || 'https://www.skool.com/ia-automatiza-7412/about';
-  const subject = `¿Ya probaste la Fábrica de Imágenes IA?`;
-  const headline = `Una pregunta rápida sobre tus resultados con IA.`;
+  const subject = `¿Ya probaste el software de automatización para Windows?`;
+  const headline = `Automatiza Meta AI, Grok y Veo3 sin copiar prompts a mano.`;
 
   const bodyContent = `Hola ${lead.nombre},
 
-Hace un par de días te di acceso a la Fábrica de Imágenes y al Superprompt de personajes.
+El mayor error de los creadores es pasar 6 horas al día copiando prompts a mano de una pestaña a otra.
 
-Quería preguntarte: *¿ya lograste generar tus primeras imágenes consistentes?*
+Por eso en mi academia creamos **Software de Automatización para Windows**: un sistema que se conecta a Meta.ai, Grok, Whisk e ImageFX para generar imágenes y videos masivamente con un solo clic.
 
-Muchos creadores cometen el error de acumular herramientas y prompts sin probarlos en un proyecto real. Mi recomendación es que hoy mismo abras la lección 2, pegues el prompt y veas la magia en ChatGPT.
+Y si a eso le sumas los **flujos de N8N** que trabajan 24/7 en la nube generando guiones y audios por escenas mientras duermes... el juego cambia por completo.
 
-Y si ya lo probaste y estás listo para crear flujos automatizados que trabajen por ti en piloto automático:
+Si estás listo para dejar de trabajar a mano y empezar a operar como un creador profesional con automatizaciones reales:
 
-En nuestra comunidad de **Skool** te muestro exactamente cómo conectar estas imágenes con clonación de voz, avatares y edición automática.`;
+Te veo dentro de nuestra comunidad en Skool. Recuerda que el acceso aún está a $14/mes antes de que suba a $19.`;
 
   const html = buildBrandedEmailHtml({
     title: subject,
     headline,
-    badge: '• SEGUIMIENTO — CASO PRÁCTICO •',
+    badge: '• SEGUIMIENTO — AUTOMATIZACIÓN •',
     name: lead.nombre,
     bodyContent,
-    ctaText: 'VER CASOS AVANZADOS EN SKOOL',
+    ctaText: 'VER AUTOMATIZACIONES EN SKOOL',
     ctaUrl: skoolUrl,
     subtitleUnderCta: 'Aprende los flujos completos que ahorran 20 horas a la semana.',
     communityUrl: config?.whatsapp_comunidad_url,

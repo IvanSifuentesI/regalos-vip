@@ -2,14 +2,14 @@ import { Modulo, ClassroomConfig } from './types';
 
 export const DEFAULT_CONFIG: ClassroomConfig = {
   id: 1,
-  nombre_classroom: "REGALOS EXCLUSIVOS",
-  subtitulo: "Aprende, implementa y descarga las herramientas prácticas para acelerar tus resultados.",
+  nombre_classroom: "Iván Sifuentes",
+  subtitulo: "Aprende, implementa y automatiza con software y herramientas reales para ahorrar tiempo y monetizar.",
   banner_url: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1400&q=80",
   whatsapp_soporte: "+521234567890",
   whatsapp_comunidad_url: "https://chat.whatsapp.com/LpfNzr7ZWh8KXyWvlBklQl",
-  whatsapp_comunidad_texto: "Comunidad VIP Gratis",
-  anuncio_superior_texto: "🚀 Accede a la Comunidad VIP FREE (+2,400 miembros)",
-  cta_oferta_texto: "🔥 Mentoría VIP (Skool)",
+  whatsapp_comunidad_texto: "Comunidad VIP WhatsApp",
+  anuncio_superior_texto: "🚨 Antes $10, Ahora $14, Pronto $19 🚨 | 🏆 Skool Games Winner (+487 Casos de Éxito)",
+  cta_oferta_texto: "🔥 Membresía Skool ($14/mes)",
   cta_oferta_url: "https://www.skool.com/ia-automatiza-7412/about",
 };
 

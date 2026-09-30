@@ -247,25 +247,28 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
   };
 
   // Quick preset templates (FÓRMULA 100K Humanized & Anti-Spam)
-  const applyPreset = (preset: 'recordatorio' | 'nueva_clase' | 'comunidad') => {
-    if (preset === 'recordatorio') {
-      setEmailSubject('tu acceso a los recursos de IA');
+  const applyPreset = (preset: 'sistema' | 'software' | 'n8n') => {
+    if (preset === 'sistema') {
+      setEmailSubject('No te falta disciplina. Te falta un sistema.');
       setEmailBody(
-        'Hola {{nombre}},\n\nTe escribo para confirmarte que ya tienes disponible el acceso a las plantillas y los prompts de IA en la Bóveda.\n\nEn la segunda lección agregué el Superprompt completo para crear todos los ángulos y planos de tu personaje en ChatGPT con fondo limpio.\n\nPega el prompt tal cual junto con la foto de referencia para que te dé las tomas de frente, perfil y 3/4 con el mismo rostro.\n\nPuedes entrar directamente desde este enlace:\n\nSi tienes alguna pregunta mientras los pruebas, me puedes responder a este correo o escribir a nuestro WhatsApp.'
+        'Hola {{nombre}}, te saluda Iván Sifuentes.\n\nTe doy la bienvenida a mi Bóveda de Recursos de IA. Ya tienes tu acceso desbloqueado para probar las primeras herramientas gratuitas.\n\nAhora, si llevas tiempo publicando en redes y sientes que no pasa nada, o llevas semanas sin publicar porque no sabes por dónde arrancar, déjame decirte algo directo:\n\n*No te falta disciplina. Te falta un sistema que trabaje por ti.*\n\nEn mi comunidad privada de **Skool** no te enseñamos teoría genérica. Te entregamos nuestros propios softwares, métodos y automatizaciones reales:\n\n✅ **Software para Windows:** Automatiza Meta.ai, Grok, Whisk e ImageFX en lote.\n✅ **Automatización de Veo3:** Crea videos masivos sin copiar ni pegar prompts.\n✅ **Flujos con N8N:** Genera guion, audio, imágenes y miniaturas 24/7 mientras duermes.\n✅ **Mi Laboratorio de Apps:** Herramientas exclusivas para ahorrarte horas de trabajo.\n✅ **Métodos de Monetización:** Guías probadas para monetizar TikTok en 7 días y nichos virales.\n\nSomos la **Comunidad #1 de creación de contenido y automatización de LATAM** (🏆 *Skool Games Winner con +487 casos de éxito*).\n\nAhora mismo puedes acceder a toda la academia por **solo $14/mes** (antes $10, y muy pronto sube a $19 definitivo).'
       );
-      setCtaButtonText('Entrar a la Bóveda de Recursos');
-    } else if (preset === 'nueva_clase') {
-      setEmailSubject('aquí tienes el prompt para los ángulos de tu personaje');
+      setCtaButtonText('UNIRME A LA COMUNIDAD POR $14');
+      setCtaButtonUrl(config.cta_oferta_url || 'https://www.skool.com/ia-automatiza-7412/about');
+    } else if (preset === 'software') {
+      setEmailSubject('¿Ya probaste el software de automatización para Windows?');
       setEmailBody(
-        'Hola {{nombre}},\n\nAcabo de subir una nueva actualización a la Bóveda con el prompt para generar la hoja completa de ángulos (frente, 3/4 y perfil) de tu personaje manteniendo el mismo rostro y edad exacta.\n\nSolo tienes que pegar el prompt en ChatGPT junto con tu foto de referencia.\n\nTe dejo el enlace para que lo revises ahora:'
+        'Hola {{nombre}},\n\nEl mayor error de los creadores es pasar 6 horas al día copiando prompts a mano de una pestaña a otra.\n\nPor eso en mi academia creamos **Software de Automatización para Windows**: un sistema que se conecta a Meta.ai, Grok, Whisk e ImageFX para generar imágenes y videos masivamente con un solo clic.\n\nAdemás tenemos la **Automatización de Veo3** para crear escenas desde guion sin tocar nada manual.\n\nSi estás listo para dejar de trabajar a mano y empezar a operar como un creador profesional con automatizaciones reales:\n\nTe veo dentro de nuestra comunidad en Skool. Recuerda que el acceso aún está a $14/mes antes de que suba a $19.'
       );
-      setCtaButtonText('Ver nuevo prompt en la Bóveda');
-    } else if (preset === 'comunidad') {
-      setEmailSubject('¿pudiste probar las plantillas de IA?');
+      setCtaButtonText('ACCEDER AL SOFTWARE EN SKOOL');
+      setCtaButtonUrl(config.cta_oferta_url || 'https://www.skool.com/ia-automatiza-7412/about');
+    } else if (preset === 'n8n') {
+      setEmailSubject('Cómo generar guion, audio y miniaturas mientras duermes');
       setEmailBody(
-        'Hola {{nombre}},\n\nQuería preguntarte si ya pudiste poner en práctica las herramientas que te compartí en la Bóveda.\n\nSi tuviste alguna traba o quieres resolver dudas con tus prompts en vivo, estamos activos en el grupo oficial de WhatsApp ayudando a implementar.\n\nTe dejo el acceso al grupo por si todavía no estás dentro:'
+        'Hola {{nombre}},\n\nLa verdadera libertad de un creador llega cuando el contenido se produce 24/7 en automático.\n\nEn la academia te enseño a dominar **N8N desde Cero a Intermedio** con scripts avanzados que crean:\n\n• Guion optimizado con SEO\n• Generación de audios por escenas\n• Miniaturas de alto impacto\n• Publicación en lotes\n\nIncluso tienes la opción de correr n8n directamente en mi servidor de alta potencia (64GB RAM, 12 CPU) para que no dependas de tu computadora.\n\nTodo esto está incluido en la membresía de Skool por solo $14/mes antes de que suba a $19:'
       );
-      setCtaButtonText('Entrar al grupo de WhatsApp');
+      setCtaButtonText('VER FLUJOS DE N8N EN SKOOL');
+      setCtaButtonUrl(config.cta_oferta_url || 'https://www.skool.com/ia-automatiza-7412/about');
     }
   };
 
@@ -351,32 +354,32 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
               </p>
             </div>
 
-            {/* Quick Presets (FÓRMULA 100K) */}
+            {/* Quick Presets (Iván Sifuentes Academy) */}
             <div>
               <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-2">
-                Plantillas Humanizadas (Anti-Spam):
+                Plantillas Oficiales de la Academia:
               </span>
               <div className="flex flex-wrap gap-2">
                 <button
                   type="button"
-                  onClick={() => applyPreset('recordatorio')}
+                  onClick={() => applyPreset('sistema')}
                   className="px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100 transition-colors"
                 >
-                  ✉️ Acceso Bóveda
+                  🏆 Sistema Skool ($14)
                 </button>
                 <button
                   type="button"
-                  onClick={() => applyPreset('nueva_clase')}
+                  onClick={() => applyPreset('software')}
                   className="px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-50 text-blue-900 border border-blue-200 hover:bg-blue-100 transition-colors"
                 >
-                  🎯 Prompt Personaje
+                  ⚙️ Software Windows & Veo3
                 </button>
                 <button
                   type="button"
-                  onClick={() => applyPreset('comunidad')}
+                  onClick={() => applyPreset('n8n')}
                   className="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-900 border border-emerald-200 hover:bg-emerald-100 transition-colors"
                 >
-                  💬 Dudas en WhatsApp
+                  🚀 Flujos N8N 24/7
                 </button>
               </div>
             </div>
