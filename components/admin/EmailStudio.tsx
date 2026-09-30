@@ -60,7 +60,7 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
   // Email Composer state (FÓRMULA 100K Conversational Style)
   const [emailSubject, setEmailSubject] = useState('bienvenido a los recursos de IA de Iván Sifuentes');
   const [emailBody, setEmailBody] = useState(
-    'Hola {{nombre}}, te saluda Iván Sifuentes.\n\nTe doy la bienvenida a mi Bóveda de Recursos de IA.\n\nYa tienes disponible tu acceso completo a las herramientas gratuitas, la Fábrica de Imágenes y los Superprompts para crear tus personajes consistentes sin complicaciones.\n\nDisfruta este contenido y ponlo en práctica desde hoy para ahorrar horas de trabajo y crear contenido de alto impacto.\n\nAhora, si tu objetivo es ir un paso más allá y buscas dominar herramientas avanzadas de IA, automatizaciones profesionales y los flujos exactos que utilizo para generar ingresos y escalar contenido, preparé un espacio exclusivo para ti:\n\nNuestra comunidad privada en Skool.\n\nAllí no solo descargas plantillas: tienes acompañamiento directo, actualizaciones constantes y el sistema paso a paso para monetizar tus habilidades con inteligencia artificial.'
+    'Hola, te saluda Iván Sifuentes.\n\nTe doy la bienvenida a mi Bóveda de Recursos de IA.\n\nYa tienes disponible tu acceso completo a las herramientas gratuitas, la Fábrica de Imágenes y los Superprompts para crear tus personajes consistentes sin complicaciones.\n\nDisfruta este contenido y ponlo en práctica desde hoy para ahorrar horas de trabajo y crear contenido de alto impacto.\n\nAhora, si tu objetivo es ir un paso más allá y buscas dominar herramientas avanzadas de IA, automatizaciones profesionales y los flujos exactos que utilizo para generar ingresos y escalar contenido, preparé un espacio exclusivo para ti:\n\nNuestra comunidad privada en Skool.\n\nAllí no solo descargas plantillas: tienes acompañamiento directo, actualizaciones constantes y el sistema paso a paso para monetizar tus habilidades con inteligencia artificial.'
   );
   const [ctaButtonText, setCtaButtonText] = useState('Entrar a la Comunidad Premium en Skool');
   const [ctaButtonUrl, setCtaButtonUrl] = useState(config.cta_oferta_url || 'https://www.skool.com/ia-automatiza-7412/about');
@@ -254,42 +254,42 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
     if (preset === 'bienvenida') {
       setEmailSubject('No te falta disciplina. Te falta un sistema.');
       setEmailBody(
-        'Hola {{nombre}}, te saluda Iván Sifuentes.\n\nTe doy la bienvenida a mi Bóveda de Recursos de IA. Ya tienes tu acceso desbloqueado para probar las primeras herramientas gratuitas.\n\nAhora, si llevas tiempo publicando en redes y sientes que no pasa nada, o llevas semanas sin publicar porque no sabes por dónde arrancar, déjame decirte algo directo:\n\n*No te falta disciplina. Te falta un sistema que trabaje por ti.*\n\nEn mi comunidad privada de **Skool** no te enseñamos teoría genérica. Te entregamos nuestros propios softwares, métodos y automatizaciones reales:\n\n✅ **Software para Windows:** Automatiza Meta.ai, Grok, Whisk e ImageFX en lote.\n✅ **Automatización de Veo3:** Crea videos masivos sin copiar ni pegar prompts.\n✅ **Flujos con N8N:** Genera guion, audio, imágenes y miniaturas 24/7 mientras duermes.\n✅ **Mi Laboratorio de Apps:** Herramientas exclusivas para ahorrarte horas de trabajo.\n✅ **Métodos de Monetización:** Guías probadas para monetizar TikTok en 7 días y nichos virales.\n\nSomos la **Comunidad #1 de creación de contenido y automatización de LATAM** (🏆 *Skool Games Winner con +487 casos de éxito*).\n\nAhora mismo puedes acceder a toda la academia por **solo $14/mes** (antes $10, y muy pronto sube a $19 definitivo).'
+        'Hola, te saluda Iván Sifuentes.\n\nTe doy la bienvenida a mi Bóveda de Recursos de IA. Ya tienes tu acceso desbloqueado para probar las primeras herramientas gratuitas.\n\nAhora, si llevas tiempo publicando en redes y sientes que no pasa nada, o llevas semanas sin publicar porque no sabes por dónde arrancar, déjame decirte algo directo:\n\n*No te falta disciplina. Te falta un sistema que trabaje por ti.*\n\nEn mi comunidad privada de **Skool** no te enseñamos teoría genérica. Te entregamos nuestros propios softwares, métodos y automatizaciones reales:\n\n✅ **Software para Windows:** Automatiza Meta.ai, Grok, Whisk e ImageFX en lote.\n✅ **Automatización de Veo3:** Crea videos masivos sin copiar ni pegar prompts.\n✅ **Flujos con N8N:** Genera guion, audio, imágenes y miniaturas 24/7 mientras duermes.\n✅ **Mi Laboratorio de Apps:** Herramientas exclusivas para ahorrarte horas de trabajo.\n✅ **Métodos de Monetización:** Guías probadas para monetizar TikTok en 7 días y nichos virales.\n\nSomos la **Comunidad #1 de creación de contenido y automatización de LATAM** (🏆 *Skool Games Winner con +487 casos de éxito*).\n\nAhora mismo puedes acceder a toda la academia por **solo $14/mes** (antes $10, y muy pronto sube a $19 definitivo).'
       );
       setCtaButtonText('UNIRME A LA COMUNIDAD POR $14');
       setCtaButtonUrl(config.cta_oferta_url || 'https://www.skool.com/ia-automatiza-7412/about');
     } else if (preset === 'recordatorio') {
       setEmailSubject('¿Pudiste probar el Superprompt de personajes?');
       setEmailBody(
-        'Hola {{nombre}},\n\nAyer te di acceso a la Bóveda con la Fábrica de Imágenes y el Superprompt de personajes.\n\nQuería recordarte que el mayor error de muchos creadores es acumular herramientas y prompts sin probarlos en un proyecto real.\n\n*Solo te toma 2 minutos:*\n1. Abre ChatGPT o Gemini.\n2. Pega tu foto de referencia.\n3. Copia el Superprompt de la Lección 2 de la Bóveda.\n\nEn segundos vas a tener todas las tomas (frente, perfil, 3/4) con el mismo rostro listo para tus videos.\n\nY recuerda: si quieres dar el salto y aprender cómo automatizar la animación y edición de estos personajes para monetizarlos en automático, te espero en nuestra comunidad de Skool por solo $14/mes:'
+        'Hola,\n\nAyer te di acceso a la Bóveda con la Fábrica de Imágenes y el Superprompt de personajes.\n\nQuería recordarte que el mayor error de muchos creadores es acumular herramientas y prompts sin probarlos en un proyecto real.\n\n*Solo te toma 2 minutos:*\n1. Abre ChatGPT o Gemini.\n2. Pega tu foto de referencia.\n3. Copia el Superprompt de la Lección 2 de la Bóveda.\n\nEn segundos vas a tener todas las tomas (frente, perfil, 3/4) con el mismo rostro listo para tus videos.\n\nY recuerda: si quieres dar el salto y aprender cómo automatizar la animación y edición de estos personajes para monetizarlos en automático, te espero en nuestra comunidad de Skool por solo $14/mes:'
       );
       setCtaButtonText('VER LA COMUNIDAD EN SKOOL');
       setCtaButtonUrl(config.cta_oferta_url || 'https://www.skool.com/ia-automatiza-7412/about');
     } else if (preset === 'software') {
       setEmailSubject('¿Ya probaste el software de automatización para Windows?');
       setEmailBody(
-        'Hola {{nombre}},\n\nEl mayor error de los creadores es pasar 6 horas al día copiando prompts a mano de una pestaña a otra.\n\nPor eso en mi academia creamos **Software de Automatización para Windows**: un sistema que se conecta a Meta.ai, Grok, Whisk e ImageFX para generar imágenes y videos masivamente con un solo clic.\n\nAdemás tenemos la **Automatización de Veo3** para crear escenas desde guion sin tocar nada manual.\n\nSi estás listo para dejar de trabajar a mano y empezar a operar como un creador profesional con automatizaciones reales:\n\nTe veo dentro de nuestra comunidad en Skool. Recuerda que el acceso aún está a $14/mes antes de que suba a $19.'
+        'Hola,\n\nEl mayor error de los creadores es pasar 6 horas al día copiando prompts a mano de una pestaña a otra.\n\nPor eso en mi academia creamos **Software de Automatización para Windows**: un sistema que se conecta a Meta.ai, Grok, Whisk e ImageFX para generar imágenes y videos masivamente con un solo clic.\n\nAdemás tenemos la **Automatización de Veo3** para crear escenas desde guion sin tocar nada manual.\n\nSi estás listo para dejar de trabajar a mano y empezar a operar como un creador profesional con automatizaciones reales:\n\nTe veo dentro de nuestra comunidad en Skool. Recuerda que el acceso aún está a $14/mes antes de que suba a $19.'
       );
       setCtaButtonText('ACCEDER AL SOFTWARE EN SKOOL');
       setCtaButtonUrl(config.cta_oferta_url || 'https://www.skool.com/ia-automatiza-7412/about');
     } else if (preset === 'n8n') {
       setEmailSubject('Cómo generar guion, audio y miniaturas mientras duermes');
       setEmailBody(
-        'Hola {{nombre}},\n\nLa verdadera libertad de un creador llega cuando el contenido se produce 24/7 en automático.\n\nEn la academia te enseño a dominar **N8N desde Cero a Intermedio** con scripts avanzados que crean:\n\n• Guion optimizado con SEO\n• Generación de audios por escenas\n• Miniaturas de alto impacto\n• Publicación en lotes\n\nIncluso tienes la opción de correr n8n directamente en mi servidor de alta potencia (64GB RAM, 12 CPU) para que no dependas de tu computadora.\n\nTodo esto está incluido en la membresía de Skool por solo $14/mes antes de que suba a $19:'
+        'Hola,\n\nLa verdadera libertad de un creador llega cuando el contenido se produce 24/7 en automático.\n\nEn la academia te enseño a dominar **N8N desde Cero a Intermedio** con scripts avanzados que crean:\n\n• Guion optimizado con SEO\n• Generación de audios por escenas\n• Miniaturas de alto impacto\n• Publicación en lotes\n\nIncluso tienes la opción de correr n8n directamente en mi servidor de alta potencia (64GB RAM, 12 CPU) para que no dependas de tu computadora.\n\nTodo esto está incluido en la membresía de Skool por solo $14/mes antes de que suba a $19:'
       );
       setCtaButtonText('VER FLUJOS DE N8N EN SKOOL');
       setCtaButtonUrl(config.cta_oferta_url || 'https://www.skool.com/ia-automatiza-7412/about');
     } else if (preset === 'oferta_venta') {
       setEmailSubject('🚨 Último aviso: Tu acceso con precio de $14 está por cerrar');
       setEmailBody(
-        'Hola {{nombre}},\n\nHace una semana te uniste a mi Bóveda de Recursos de IA.\n\nQuiero avisarte con total transparencia:\n\nEl precio de acceso a nuestra academia de **Skool** era de $10. Ahora está en **$14/mes** y muy pronto subirá a **$19/mes** de forma definitiva debido a todo el nuevo software y flujos de automatización que estamos agregando semana a semana.\n\nSi te unes hoy:\n✅ Congelas tu precio en solo $14/mes para siempre.\n✅ Accedes de inmediato a todo el software para Windows, Veo3 y flujos N8N.\n✅ Entras al Laboratorio de Apps donde comparto mis soluciones a medida.\n✅ Obtienes soporte directo y sesiones en vivo conmigo.\n\nNo dejes pasar esta oportunidad antes de que el precio aumente:'
+        'Hola,\n\nHace una semana te uniste a mi Bóveda de Recursos de IA.\n\nQuiero avisarte con total transparencia:\n\nEl precio de acceso a nuestra academia de **Skool** era de $10. Ahora está en **$14/mes** y muy pronto subirá a **$19/mes** de forma definitiva debido a todo el nuevo software y flujos de automatización que estamos agregando semana a semana.\n\nSi te unes hoy:\n✅ Congelas tu precio en solo $14/mes para siempre.\n✅ Accedes de inmediato a todo el software para Windows, Veo3 y flujos N8N.\n✅ Entras al Laboratorio de Apps donde comparto mis soluciones a medida.\n✅ Obtienes soporte directo y sesiones en vivo conmigo.\n\nNo dejes pasar esta oportunidad antes de que el precio aumente:'
       );
       setCtaButtonText('CONGELAR MI PRECIO A $14/MES');
       setCtaButtonUrl(config.cta_oferta_url || 'https://www.skool.com/ia-automatiza-7412/about');
     } else if (preset === 'nuevo_modulo') {
       setEmailSubject('Nuevo recurso disponible en la Bóveda: [Nombre del Módulo]');
       setEmailBody(
-        'Hola {{nombre}},\n\nTe aviso rápido porque acabo de liberar una nueva actualización en la Bóveda:\n\n**[NOMBRE DEL NUEVO RECURSO O APP]**\n*Nueva herramienta y automatizaciones listas para implementar de inmediato.*\n\nYa puedes entrar a tu panel para probarlo y ver cómo aplicarlo en tus contenidos.\n\nRecuerda que si quieres dominar las automatizaciones a fondo y tener nuestros softwares para Windows y acceso a sesiones en vivo, te espero en la comunidad privada de Skool:'
+        'Hola,\n\nTe aviso rápido porque acabo de liberar una nueva actualización en la Bóveda:\n\n**[NOMBRE DEL NUEVO RECURSO O APP]**\n*Nueva herramienta y automatizaciones listas para implementar de inmediato.*\n\nYa puedes entrar a tu panel para probarlo y ver cómo aplicarlo en tus contenidos.\n\nRecuerda que si quieres dominar las automatizaciones a fondo y tener nuestros softwares para Windows y acceso a sesiones en vivo, te espero en la comunidad privada de Skool:'
       );
       setCtaButtonText('ACCEDER AL NUEVO RECURSO');
       setCtaButtonUrl(config.cta_oferta_url || 'https://www.skool.com/ia-automatiza-7412/about');
@@ -861,16 +861,14 @@ export const EmailStudio: React.FC<EmailStudioProps> = ({ config, leads, onUpdat
                   {/* Headline in Serif Style */}
                   <div className="text-center">
                     <h4 className="font-serif text-base sm:text-lg font-bold text-white leading-snug">
-                      {emailSubject.replace(/\{\{nombre\}\}/gi, (leads[0]?.nombre && !['Lead sin nombre', 'Dd', 'nombre'].includes(leads[0].nombre) ? leads[0].nombre.split(' ')[0] : 'Juan'))}
+                      {emailSubject}
                     </h4>
                     <div className="w-10 h-0.5 bg-[#c59b27] mx-auto mt-2 rounded-full"></div>
                   </div>
 
                   {/* Body Preview (Luxe Narrative Style) */}
                   <div className="text-xs text-gray-300 leading-relaxed whitespace-pre-line font-sans">
-                    {emailBody
-                      .replace(/Hola\s*,?\s*\{\{nombre\}\}/gi, `Hola ${(leads[0]?.nombre && !['Lead sin nombre', 'Dd', 'nombre'].includes(leads[0].nombre) ? leads[0].nombre.split(' ')[0] : 'Juan')}`)
-                      .replace(/\{\{nombre\}\}/gi, (leads[0]?.nombre && !['Lead sin nombre', 'Dd', 'nombre'].includes(leads[0].nombre) ? leads[0].nombre.split(' ')[0] : 'Juan'))}
+                    {emailBody}
                   </div>
 
                   {/* Luxe Gold CTA Button */}

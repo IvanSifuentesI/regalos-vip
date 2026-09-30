@@ -401,24 +401,10 @@ export function buildBrandedEmailHtml({
 }): string {
   const displayHeadline = headline || title || 'Acceso Exclusivo a la Bóveda de IA';
 
-  // Sanitizar y obtener nombre limpio para el saludo
-  const cleanName = formatGreetingName(name, recipientEmail);
-
-  let processedBody = bodyContent;
-  if (cleanName) {
-    // Si tenemos un nombre válido (ej. "Juan")
-    processedBody = processedBody
-      .replace(/Hola\s*,?\s*\{\{nombre\}\}/gi, `Hola ${cleanName}`)
-      .replace(/\{\{nombre\}\}/gi, cleanName);
-  } else {
-    // Si no hay nombre válido o era un placeholder, ajustar gramática limpiamente
-    processedBody = processedBody
-      .replace(/Hola\s*,?\s*\{\{nombre\}\}\s*,?/gi, 'Hola,')
-      .replace(/\{\{nombre\}\}/gi, '');
-  }
-
-  // Limpieza exhaustiva de cualquier rezago de placeholders o dobles comas
-  processedBody = processedBody
+  // Formato 100% limpio y directo: elimina cualquier etiqueta o placeholder de nombre
+  const processedBody = bodyContent
+    .replace(/Hola\s*,?\s*\{\{nombre\}\}\s*,?/gi, 'Hola,')
+    .replace(/\{\{nombre\}\}/gi, '')
     .replace(/Hola\s+(lead sin nombre|sin nombre|nombre|name|amigo|user|usuario|dd)\s*,?/gi, 'Hola,')
     .replace(/Hola\s*,\s*,/gi, 'Hola,')
     .replace(/Hola\s*,\s*te saluda/gi, 'Hola, te saluda')
@@ -534,13 +520,10 @@ export async function sendWelcomeEmail(lead: Lead, config?: ClassroomConfig) {
   const communityUrl = config?.whatsapp_comunidad_url || 'https://chat.whatsapp.com/LpfNzr7ZWh8KXyWvlBklQl';
   const brandName = 'Iván Sifuentes';
 
-  const cleanName = formatGreetingName(lead.nombre, lead.email);
-  const greeting = cleanName ? `Hola ${cleanName}, te saluda Iván Sifuentes.` : `Hola, te saluda Iván Sifuentes.`;
-
   const subject = `No te falta disciplina. Te falta un sistema.`;
   const headline = `Bienvenido a la Bóveda de Recursos y Automatizaciones IA.`;
 
-  const bodyContent = `${greeting}
+  const bodyContent = `Hola, te saluda Iván Sifuentes.
 
 Te doy la bienvenida a mi Bóveda de Recursos de IA. Ya tienes tu acceso desbloqueado para probar las primeras herramientas gratuitas.
 
@@ -564,7 +547,6 @@ Ahora mismo puedes acceder a toda la academia por **solo $14/mes** (antes $10, y
     title: subject,
     headline,
     badge: '• BÓVEDA IA & AUTOMATIZACIONES •',
-    name: cleanName,
     bodyContent,
     ctaText: 'UNIRME A LA COMUNIDAD POR $14',
     ctaUrl: skoolUrl,
@@ -596,10 +578,7 @@ export async function sendContentUpdateEmail({
   const subject = `Nuevo recurso disponible: ${moduleTitle}`;
   const headline = `Acabo de subir una nueva actualización a la Bóveda.`;
 
-  const cleanName = formatGreetingName(lead.nombre, lead.email);
-  const greeting = cleanName ? `Hola ${cleanName},` : `Hola,`;
-
-  const bodyContent = `${greeting}
+  const bodyContent = `Hola,
 
 Te aviso rápido porque acabo de liberar un nuevo recurso en la Bóveda:
 
@@ -614,7 +593,6 @@ Recuerda que si quieres dominar las automatizaciones a fondo, tener nuestros sof
     title: subject,
     headline,
     badge: '• NUEVO RECURSO DISPONIBLE •',
-    name: cleanName,
     bodyContent,
     ctaText: 'ACCEDER AL NUEVO RECURSO',
     ctaUrl: skoolUrl,
@@ -635,10 +613,7 @@ export async function sendFollowUpDay2Email(lead: Lead, config?: ClassroomConfig
   const subject = `¿Ya probaste el software de automatización para Windows?`;
   const headline = `Automatiza Meta AI, Grok y Veo3 sin copiar prompts a mano.`;
 
-  const cleanName = formatGreetingName(lead.nombre, lead.email);
-  const greeting = cleanName ? `Hola ${cleanName},` : `Hola,`;
-
-  const bodyContent = `${greeting}
+  const bodyContent = `Hola,
 
 El mayor error de los creadores es pasar 6 horas al día copiando prompts a mano de una pestaña a otra.
 
@@ -654,7 +629,6 @@ Te veo dentro de nuestra comunidad en Skool. Recuerda que el acceso aún está a
     title: subject,
     headline,
     badge: '• SEGUIMIENTO — AUTOMATIZACIÓN •',
-    name: cleanName,
     bodyContent,
     ctaText: 'VER AUTOMATIZACIONES EN SKOOL',
     ctaUrl: skoolUrl,
